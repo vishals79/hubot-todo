@@ -1,0 +1,38 @@
+{
+  "name": "hubot-todo",
+  "version": "1.0.0",
+  "description": "A Hubot script that manage TODOs",
+  "main": "index.coffee",
+  "scripts": {
+    "robot": "hubot --adapter shell",
+    "test": "mocha --require espower-coffee/guess --reporter spec test/**/*.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vishals79/hubot-todo.git"
+  },
+  "keywords": [
+    "hubot",
+    "hubot-scripts"
+  ],
+  "author": {
+    "name": "vishal singh",
+    "mail": "",
+    "url": ""
+  },
+  "license": "",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "devDependencies": {
+    "espower-coffee": "^0.1.0",
+    "hubot": "^2.8.0",
+    "mocha": "^1.20.1",
+    "power-assert": "^0.7.2",
+    "sinon": "^1.10.3"
+  },
+  "peerDependencies": {
+    "coffee-script": "1.7.x"
+  }
+}
