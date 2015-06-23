@@ -2,7 +2,7 @@
 
 A Hubot script that manages TODOs.
 
-Functions supported: add, show and help.
+Functions supported: add,update,delete,show and help.
 
 ## Example
 ### todo add <task>
