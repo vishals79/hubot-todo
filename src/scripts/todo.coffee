@@ -1,75 +1,143 @@
 # Description:
-#   A todo script.
+#   Simple todo app
+#
+# Dependencies:
+#
+# Configuration:
+#   None
 #
 # Commands:
-#   todo add  - Add an item into the list
-#   todo show - Display the item list.
-#   todo help - Display help
-#
-# Notes:
-#   
+#   todo add <description> - Add a new todo with a basic description
+#   todo delete <item number | all> - Remove a todo item from the list
+#   todo update <item number> - Update the item
+#   todo list - List your tasks
+#   todo help - Get help with this plugin
 #
 # Author:
-#   Vishal Singh
-#
-module.exports = (robot) ->
-  # helper method to get sender of the message
-  get_username = (response) ->
-    "@#{response.message.user.name}"
+#   vishal singh
 
-  # helper method to get channel of originating message
-  get_channel = (response) ->
-    if response.message.room == response.message.user.name
-      "@#{response.message.room}"
-    else
-      "##{response.message.room}"
+class Todos
+	constructor: (@robot) ->
+		@robot.brain.data.todos = {}
 
-  ###
-  #   responds to "[botname] hi"
-  ###
-  robot.respond /hi/i, (msg) ->
-    # responds in the current channel
-    msg.send 'Hello! '+get_username(msg)
+		@robot.respond /todo add (.*)/i, @addItem
+		@robot.respond /todo delete ([0-9]+|all)/i, @removeItem
+		@robot.respond /todo show/i, @listItems
+		@robot.respond /todo help/i, @help
+		@robot.respond /todo update ([0-9]+) (.*)/i, @updateItem
+
+	help: (msg) =>
+		commands = @robot.helpCommands()
+		commands = (command for command in commands when command.match(/todo/))
+
+		msg.send commands.join("\n")
+
+	addItem: (msg) =>
+		user 	   = msg.message.user
+		description = msg.match[1]
+
+		@robot.brain.data.todos[user.id] ?= []
+		@robot.brain.data.todos[user.id].push(description)
+
+		totalItems = @getItems(user).length
+		multiple   = totalItems isnt 1
+
+		message = "#{totalItems} item" + (if multiple then 's' else '') + " in your list\n\n"
+
+		msg.send message
+
+	removeItem: (msg) =>
+		user 	  = msg.message.user
+		item       = msg.match[1]
+		items      = @getItems(user)
+		totalItems = items.length
+
+		if totalItems == 0
+			message = "There's nothing on your list at the moment"
+			msg.send message
+			return
+
+		if item isnt 'all' and item > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+
+		if item is 'all'
+			@clearAllItems(user)
+		else
+			@robot.brain.data.todos[user.id].splice(item - 1, 1)
+
+		
+		remainingItems = @getItems(user)
+		multiple 	  = remainingItems.length isnt 1
+
+		if remainingItems.length > 0
+			message = " Item deleted. #{remainingItems.length} item" + (if multiple then 's' else '') + " left.\n\n"
+		else
+			message = " Item deleted. There's nothing on your list at the moment "
+
+		msg.send message
+
+	updateItem: (msg) =>
+		user      = msg.message.user
+		item      = msg.match[1]
+		desc      = msg.match[2]
+		items      = @getItems(user)
+		totalItems = items.length
+
+		
 
 
-  ###
-  #   Displays the help
-  ###
-  robot.respond /todo help/i, (msg) ->
-   msg.send "\n usage: todo [--help] <command> <args>\n The most commonly used todo commands are:\n\t todo add\t   Add a task to the todo list. e.g. todo add Call Mr. A @ 11:30AM\n\t todo show\tDisplay the item list.\n\t todo help\t  Display the help."
+		if item > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
 
-  ###
-  #   Add an item into the list"
-  ###
-  robot.respond /todo add (.*)/i, (msg) ->
-    # responds in the current channel
-      text = msg.match[1]
-      todo_key = robot.brain.get(get_username(msg)+"_key")
-      space = "                          "
-      count = (robot.brain.get(get_username(msg)+"_key"+"_count") || 1)
-      if not todo_key?
-       list = "\n"+"Task No_____Task-To-Do_______________________"+"\n"
-       robot.brain.set(get_username(msg)+"_key",list+count+space+text)
-       robot.brain.set(get_username(msg)+"_key"+"_count",count+1)
-       msg.reply " Your task has been added into the list "
-      else
-       list = robot.brain.get(get_username(msg)+"_key")+ "\n"
-       robot.brain.set(get_username(msg)+"_key",list+count+space+text)
-       robot.brain.set(get_username(msg)+"_key"+"_count",count+1)
-       msg.reply " Your task has been added into the list "
+			msg.send message
 
-  ###
-  #   Show the list
-  ###
-  robot.respond /todo show/i, (msg) ->
-    task_count = (robot.brain.get(get_username(msg)+"_key"+"_count") || 0)
-    if  (task_count == 0)
-     msg.reply "There's nothing on your list at the moment"
-    else
-     msg.send robot.brain.get(get_username(msg)+"_key")
+			return
+		else
+			@robot.brain.data.todos[user.id].splice(item - 1, 1,desc)
+
+		message = "Item updated."
+		msg.send message
 
 
-  # any message above not yet processed falls here. See the console to examine the object
-  # uncomment to test this
-  # robot.catchAll (response) ->
-  #   console.log('catch all: ', response)
+	clearAllItems: (user) => @robot.brain.data.todos[user.id].length = 0
+
+	createListMessage: (user) =>
+		items = @getItems(user)
+
+		message = ""
+
+		if items.length > 0
+			for todo, index in items
+				message += "#{index + 1}#    #{todo}\n"
+		else
+			message += "Nothing to do at the moment!"
+
+		return message
+
+	getItems: (user) => return @robot.brain.data.todos[user.id] or []
+
+	listItems: (msg) =>
+		user   	= msg.message.user
+		totalItems = @getItems(user).length
+		multiple   = totalItems isnt 1
+
+		message = ""
+
+		if totalItems > 0
+			message += "#{totalItems} item" + (if multiple then 's' else '') + " in your list\n\n"
+
+		message += @createListMessage(user)
+
+		msg.send message
+
+module.exports = (robot) -> new Todos(robot)
