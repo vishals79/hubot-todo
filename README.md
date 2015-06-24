@@ -50,7 +50,7 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
           name and desc- mandatory, rest optional"
       
       - add subtask
-        - to add a subtask for any task using the <task-id> as the parent id.
+        - to add a subtask for any task using the "task-id" as the parent id.
 	  
       - show
         - show -t <time>
