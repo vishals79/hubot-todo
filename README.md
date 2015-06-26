@@ -6,6 +6,10 @@ Functions supported: add,update,delete,show and help.
 
 ## Example
 ### todo add <task>
+
+  add name -d desc -t time -c category -p priority -s status
+  name and desc- mandatory, rest optional
+
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-add.jpg "todo add")
 
 ### todo update <task-number> <modified-task-desc>
@@ -29,8 +33,14 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
   - How to install
   - Commands in use
     - Current
-      - add
-        "Add  a task into the list. e.g. todo add <description>"
+      - add 
+        - add name -d desc -t time -c category -p priority -s status
+          "This will add a task with name, description, time, category, priority and status.
+          Time - Time to complete the task.
+          Category - Tasks can be tagged to be of any particular category.
+          Priority - Tasks can belong to one of the three categories. High, Medium and Low.
+          Status - Complete(C) or Incomplete(I)
+          name and desc- mandatory, rest optional"
       - update
         "Update an existing task. e.g. todo update <task-number>"
       - delete
@@ -40,18 +50,8 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
       - help
         "Display help."
     - To be added
-      - add 
-        - add name -d desc -t time -c category -p priority -s status
-          "This will add a task with name, description, time, category, priority and status.
-          Time - Time to complete the task.
-          Category - Tasks can be tagged to be of any particular category.
-          Priority - Tasks can belong to one of the three categories. High, Medium and Low.
-          Status - Complete(C) or Incomplete(I)
-          name and desc- mandatory, rest optional"
-      
       - add subtask
         - to add a subtask for any task using the "task-id" as the parent id.
-	  
       - show
         - show -t <time>
           "Show tasks based on time."

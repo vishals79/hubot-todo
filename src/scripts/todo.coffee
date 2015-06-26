@@ -7,10 +7,10 @@
 #   None
 #
 # Commands:
-#   todo add <description> - Add a new todo with a basic description\n
-#   todo delete <item number | all> - Remove a todo item from the list\
+#   todo add <task name> -d <description> -t|-c|-p|-s <optional flags> <flag values>- Add a new todo with -d - description  -t time (DD-MM-YYYY) -c category(Three characters category. Default "Oth") -p priority(H-High,M-Medium or L-Low) -s status (C\c-Complete I\i - Incomplete P\p - Pending)
+#   todo delete <item number | all> - Remove a todo item from the list.
 #   todo update <item number> - Update the item
-#   todo list - List your tasks
+#   todo show - List your tasks
 #   todo help - Get help with this plugin
 #
 # Author:
@@ -56,6 +56,11 @@ class Todos
 			year = task_desc.slice(isTimeExist+10,isTimeExist+14)
 			task_time = new Date(year,month,date)
 			task_time_str = task_time.toDateString()
+			isValidDate = @isValidDate(task_desc,isTimeExist)
+			if isValidDate != 1
+				msg.send "Opps! It seems time format is not correct.\n Time Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
+				return
+
 		else
 			task_time = new Date()
 			task_time = new Date(task_time.getFullYear(),task_time.getMonth(),task_time.getDate())
@@ -94,6 +99,15 @@ class Todos
 		message = "#{totalItems} item" + (if multiple then 's' else '') + " in your list\n\n"
 
 		msg.send message
+
+	isValidDate: (text, index) =>
+	 date_str = text.slice(index+3,index+14)
+		if date_str?
+		 doesMatch = date_str.match /(0[1-9]|[1-2][0-9]|3[0-1])-(0[1-9]|1[0-1])-(201[5-9]|20[2-9][0-9])/
+		 if doesMatch?
+		   return 1
+		 else
+		   return -1
 
 	endOfDesc: (indexes) =>
 		endIndex = -1
