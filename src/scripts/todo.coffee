@@ -7,11 +7,15 @@
 #   None
 #
 # Commands:
-#   todo add <task name> -d <description> -t|-c|-p|-s <optional flags> <flag values>- Add a new todo with -d - description  -t time (DD-MM-YYYY) -c category(Three characters category. Default "Oth") -p priority(H-High,M-Medium or L-Low) -s status (C\c-Complete I\i - Incomplete P\p - Pending)
-#   todo delete <item number | all> - Remove a todo item from the list.
-#   todo update <item number> - Update the item
-#   todo show - List your tasks
-#   todo help - Get help with this plugin
+#    - do (task-description): A task will be added with task description and default date (current date) and time (mid-night) values.
+#    - modify (task-number) with (task-description): A task will be added with task description and default date (current date) and time (mid-night) values.
+#    - set time (time in the format hh:mm) for (task number): Modify the time for the mentioned task.
+#    - set date (date in the format DD-MM-YYYY) for (task number): Modify the date for the mentioned task.
+#    - add note (note-description) for (task number): add note for the mentioned task.
+#    - remove (task number): remove the mentioned task and all its child tasks and modify the parent task accordingly.
+#    - list: display the list of tasks on chronological basis.
+#    - finish (task-number): mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
+#    - subtask (description) child of (parent-task-number): add sub task for parent-task-number.
 #
 # Author:
 #   vishal singh
@@ -20,75 +24,233 @@ class Todos
 	constructor: (@robot) ->
 		@robot.brain.data.todos = {}
 
-		@robot.respond /todo add (.*) -d (.*)/i, @addItem
-		@robot.respond /todo delete ([0-9]+|all)/i, @removeItem
-		@robot.respond /todo show/i, @listItems
-		@robot.respond /todo help/i, @help
-		@robot.respond /todo update ([0-9]+) (.*)/i, @updateItem
+		@robot.respond /do (.*)/i, @addItem
+		@robot.respond /remove ([0-9]+|all)/i, @removeItem
+		@robot.respond /list/i, @listItems
+		@robot.respond /help/i, @help
+		@robot.respond /modify ([0-9]+) (.*)/i, @updateItem
+		@robot.respond /set time ([0-9]{2}):([0-9]{2}) for ([0-9]+)/i, @setTime
+		@robot.respond /set date ([0-9]{2})-([0-9]{2})-([0-9]{4}) for ([0-9]+)/i, @setDate
+		@robot.respond /note (.*) for ([0-9]+)/i, @addNote
+		@robot.respond /subtask (.*) for ([0-9]+)/i, @addSubtask
+		@robot.respond /finish ([0-9]+)/i, @markTaskAsFinish
 
 	help: (msg) =>
 		commands = @robot.helpCommands()
-		commands = (command for command in commands when command.match(/todo/))
+		commands = (command for command in commands when command.match(/( - )/))
 
 		msg.send commands.join("\n")
 
+	markTaskAsFinish: (msg) =>
+		user 	   = msg.message.user
+		task_number = msg.match[1]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		if task_number > totalItems
+			if totalItems > 0
+				message = "Task doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			item = items[task_number-1]
+			item.status = "Done"
+			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,item)
+
+		message = "Task status updated."
+		msg.send message
+
+	addSubtask: (msg) =>
+		user 	   = msg.message.user
+		description = msg.match[1]
+		task_parent_number = msg.match[2]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		if task_parent_number > totalItems
+			if totalItems > 0
+				message = "Parent task doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			item = items[task_parent_number-1]
+			subtask_list = item.subtask_list
+			subtask_list.push(description)
+			item.subtask_list = subtask_list
+
+			@robot.brain.data.todos[user.id].splice(task_parent_number - 1, 1,item)
+
+		message = "Sub task added."
+		msg.send message
+
+	addChild: (msg) =>
+		user 	   = msg.message.user
+		task_child_number= msg.match[1]
+		task_parent_number = msg.match[2]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		if task_child_number > totalItems
+			if totalItems > 0
+				message = "Child task doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else if task_parent_number > totalItems
+			if totalItems > 0
+				message = "Parent task doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			child_task = items[task_child_number-1]
+			parent_task = items[task_parent_number-1]
+
+			parent_task.child = task_child_number
+			parent_list = child_task.parents
+			parent_list.push(task_parent_number)
+			child_task.parents = parent_list
+
+			@robot.brain.data.todos[user.id].splice(task_child_number - 1, 1,child_task)
+			@robot.brain.data.todos[user.id].splice(task_parent_number - 1, 1,parent_task)
+
+		message = "Task marked as a child."
+		msg.send message
+
+
+	addNote: (msg) =>
+		user 	   = msg.message.user
+		note       = msg.match[1]
+		task_number = msg.match[2]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		
+
+
+		if task_number > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			task = items[task_number-1]
+			task.note = note
+
+			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
+
+		message = "Note added."
+		msg.send message
+
+	setDate: (msg) =>
+		user 	   = msg.message.user
+		date= msg.match[1]
+		month = msg.match[2]
+		year = msg.match[3]
+		task_number = msg.match[4]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		
+
+
+		if task_number > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			task = items[task_number-1]
+			task_date = new Date(year,month,date)
+
+			date_str = date+"-"+month+"-"+year
+			task.date_str = date_str
+			task.task_date = task_date
+
+			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
+
+		message = "Item updated."
+		msg.send message
+
+	setTime: (msg) =>
+		user 	   = msg.message.user
+		task_hour= msg.match[1]
+		task_minute = msg.match[2]
+		task_number = msg.match[3]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		
+
+
+		if task_number > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			task = items[task_number-1]
+			task.time = task_hour+":"+task_minute
+			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
+
+		message = "Item updated."
+		msg.send message
+
 	addItem: (msg) =>
 		user 	   = msg.message.user
-		task_name = msg.match[1]
-		task_desc = msg.match[2]
+		task_desc = msg.match[1]
 
-		isTimeExist = @doesTimeExist(task_desc)
-		isCategoryExist = @doesCategoryExist(task_desc)
-		isPriorityExist = @doesPriorityExist(task_desc)
-		isStatusExist = @doesStatusExist(task_desc)
+		tasks = {description:task_desc}
 
-		descEndIndex = @endOfDesc([isTimeExist,isCategoryExist,isPriorityExist,isStatusExist])
-		if descEndIndex != -1
-			description = task_desc.slice(0,descEndIndex)
-		else
-			description = task_desc
+		task_date = new Date()
+		task_date = new Date(task_date.getFullYear(),task_date.getMonth(),task_date.getDate())
+		year = task_date.getFullYear()
+		month = task_date.getMonth()
+		date = task_date.getDate()
 
-		tasks = {name:task_name, description:description}
+		date_str = date+"-"+month+"-"+year
 
-		if isTimeExist != -1
-			date = task_desc.slice(isTimeExist+3,isTimeExist+6)
-			month = task_desc.slice(isTimeExist+7,isTimeExist+9)
-			year = task_desc.slice(isTimeExist+10,isTimeExist+14)
-			task_time = new Date(year,month,date)
-			task_time_str = task_time.toDateString()
-			isValidDate = @isValidDate(task_desc,isTimeExist)
-			if isValidDate != 1
-				msg.send "Opps! It seems time format is not correct.\n Time Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
-				return
+		hour = "00"
+		minute = "00"
 
-		else
-			task_time = new Date()
-			task_time = new Date(task_time.getFullYear(),task_time.getMonth(),task_time.getDate())
-			task_time_str = task_time.toDateString()
-		
-		tasks.time = task_time_str
-		tasks.task_time = task_time
-
-		if isCategoryExist != -1
-			category = task_desc.slice(isCategoryExist+3,isCategoryExist+7)
-		else
-			category = "Oth"
-
-		tasks.category = category
-
-		if isPriorityExist != -1
-			priority = task_desc.slice(isPriorityExist+3,isPriorityExist+5)
-		else
-			priority = "L"
-
-		tasks.priority = priority
-
-		if isStatusExist != -1
-			status = task_desc.slice(isStatusExist+3,isStatusExist+5)
-		else
-			status = "I"
-
-		tasks.status = status
+		tasks.date_str = date_str
+		tasks.task_date = task_date
+		tasks.time = hour+":"+minute
+		tasks.child = ""
+		tasks.parents = []
+		tasks.subtask_list = []
 
 		@robot.brain.data.todos[user.id] ?= []
 		@robot.brain.data.todos[user.id].push(tasks)
@@ -99,52 +261,6 @@ class Todos
 		message = "#{totalItems} item" + (if multiple then 's' else '') + " in your list\n\n"
 
 		msg.send message
-
-	isValidDate: (text, index) =>
-	 date_str = text.slice(index+3,index+14)
-		if date_str?
-		 doesMatch = date_str.match /(0[1-9]|[1-2][0-9]|3[0-1])-(0[1-9]|1[0-1])-(201[5-9]|20[2-9][0-9])/
-		 if doesMatch?
-		   return 1
-		 else
-		   return -1
-
-	endOfDesc: (indexes) =>
-		endIndex = -1
-		for index in indexes
-		 if index != -1 and endIndex < 0
-				endIndex = index
-		 if index != -1 and endIndex > 0 and index < endIndex
-				endIndex = index
-	 return endIndex
-
-	doesTimeExist: (desc) =>
-		output = desc.indexOf(" -t ")
-		if output != -1
-			return output
-		else
-			return -1
-
-	doesPriorityExist: (desc) =>
-		output = desc.indexOf(" -p ")
-		if output != -1
-			return output
-		else
-			return -1
-
-	doesCategoryExist: (desc) =>
-		output = desc.indexOf(" -c ")
-		if output != -1
-			return output
-		else
-			return -1
-			
-	doesStatusExist: (desc) =>
-		output = desc.indexOf(" -s ")
-		if output != -1
-			return output
-		else
-			return -1
 
 	removeItem: (msg) =>
 		user 	  = msg.message.user
@@ -203,7 +319,9 @@ class Todos
 
 			return
 		else
-			@robot.brain.data.todos[user.id].splice(item - 1, 1,desc)
+			task = items[item-1]
+			task.description = desc
+			@robot.brain.data.todos[user.id].splice(item - 1, 1,task)
 
 		message = "Item updated."
 		msg.send message
@@ -218,7 +336,7 @@ class Todos
 		overdue = ["\n   Overdue\n"]
 		today = ["\n   Today\n"]
 		tomorrow = ["\n   Tomorrow\n"]
-		someOtherDay = ["\n   Some Other Day\n"]
+		someOtherDay = ["\n   Rest\n"]
 
 		current_date = new Date()
 		current_date = new Date(current_date.getFullYear(),current_date.getMonth(),current_date.getDate())
@@ -231,14 +349,18 @@ class Todos
 			for todo, index in items
 				values = []
 				values.push(index + 1)
-				values.push(todo["name"])
 				values.push(todo["description"])
+				values.push(todo["date_str"])
 				values.push(todo["time"])
-				values.push(todo["category"])
-				values.push(todo["priority"])
+				values.push(todo["note"])
 				values.push(todo["status"])
 
-				date = new Date(todo["task_time"])
+				subtasks = todo["subtask_list"]
+
+				for subtask,index in subtasks
+					values.push("\n           "+(index+1)+". "+subtask)
+
+				date = new Date(todo["task_date"])
 				if date < current_date
 					overdue.push(values.join("                "))
 
@@ -253,13 +375,15 @@ class Todos
 
 			if overdue.length > 1
 				message += overdue.join("\n")
-				message += "\n----------------------------------------------------------------------------------------------------------------------\n"
+				message += "\n-------------------------------------------------------------------------------------------------------------\n"
 			if today.length > 1
 				message += today.join("\n")
-				message += "\n-------------------------------------------------------------------------------\n"
+				message += 
+				"\n-------------------------------------------------------------------------------------------------------------\n"
 			if tomorrow.length > 1
 				message += tomorrow.join("\n")
-				message += "\n-------------------------------------------------------------------------------\n"
+				message += 
+				"\n-------------------------------------------------------------------------------------------------------------\n"
 			if someOtherDay.length > 1
 				message += someOtherDay.join("\n")
 		else

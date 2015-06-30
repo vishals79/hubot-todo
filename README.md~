@@ -60,6 +60,6 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - to set default date for task
       - set default time HH:MM
         - to set default time for task
-      - organize the output of list command to display the results in tabular form.
+
       
   - Examples
