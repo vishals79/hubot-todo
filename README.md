@@ -2,24 +2,34 @@
 
 A Hubot script that manages TODOs.
 
-Functions supported: add,update,delete,show and help.
 
 ## Example
-### todo add <task>
+### do <task-description>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-do.jpg "do")
 
-  add name -d desc -t time -c category -p priority -s status
-  name and desc- mandatory, rest optional
+### modify <task-number> with <task-description>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-modify.jpg "modify")
 
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-add.jpg "todo add")
+### set time <time in the format hh:mm> for <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-settime.jpg "set time")
 
-### todo update <task-number> <modified-task-desc>
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-update.jpg "todo update")
+### set date <date in the format DD-MM-YYYY> for <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdate.jpg "set date")
 
-### todo delete <task-number>
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-delete.jpg "todo delete")
+### note <note-description> for <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-note.jpg "note")
 
-### todo show
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-show.jpg "todo show")
+### remove <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-remove.jpg "remove")
+
+### list
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-list.jpg "list")
+
+### finish <task-number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-finish.jpg "finish")
+
+### subtask <description> for <parent-task-number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-subtask.jpg "subtask")
 
 ### todo help
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-help.jpg "todo help")
