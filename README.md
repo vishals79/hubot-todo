@@ -69,15 +69,13 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         -  mark the specified task as complete.
       - subtask (description) for (parent-task-number)
         -  add sub task for parent-task-number.
-    - To be added
       - set date today/today+n for (task-number)
         - to provide user the feasibility to mark date using text. It will also handle arithmetic expression like today+1/2/3...
+    - To be added
       - modify (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
       - set default date DD-MM-YYYY|today+n
         - to set default date for task
       - set default time HH:MM
-        - to set default time for task
-      - organize the output of list command to display the results in tabular form.
-      
+        - to set default time for task 
   - Examples
