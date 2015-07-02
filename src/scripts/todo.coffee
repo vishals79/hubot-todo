@@ -39,6 +39,7 @@ class Todos
 		@robot.respond /set default date (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDefaultDate
 		@robot.respond /set default date today\+([0-9]+)/i, @setDefaultDateExpression
 		@robot.respond /default date is today/i, @setDefaultTodayDate
+		@robot.respond /set default time ([0-9]{2}):([0-9]{2})/i, @setDefaultTime
 
 	help: (msg) =>
 		message = "* do (task-description): A task will be added with task description and default date (current date) and time values.
@@ -95,6 +96,21 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Item updated."
+		msg.send message
+
+	setDefaultTime: (msg) =>
+		user 	   = msg.message.user
+		user_id = user.id
+		default_time_key = user_id+"_"+"default_time_key"
+		hour = msg.match[1]
+		minutes = msg.match[2]
+
+		time_str = hour+":"+minutes
+
+		@robot.brain.data.todos[default_time_key] = []
+		@robot.brain.data.todos[default_time_key].push(time_str)
+
+		message = "Default time set to #{time_str}"
 		msg.send message
 
 	setDefaultDate: (msg) =>
@@ -398,12 +414,14 @@ class Todos
 			date = task_date.getDate()
 			date_str = date+"-"+month+"-"+year
 
-		hour = "00"
-		minute = "00"
+		if @robot.brain.data.todos[user.id+"_"+"default_time_key"]?
+			time_str = @robot.brain.data.todos[user.id+"_"+"default_time_key"][0]
+		else
+			time_str = "00:00"
 
 		tasks.date_str = date_str
 		tasks.task_date = task_date
-		tasks.time = hour+":"+minute
+		tasks.time = time_str
 		tasks.child = ""
 		tasks.parents = []
 		tasks.subtask_list = []
