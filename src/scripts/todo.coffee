@@ -53,6 +53,7 @@ class Todos
         \n* list: display the list of tasks on chronological basis.
         \n* finish (task-number): mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
         \n* subtask (description) child of (parent-task-number): add sub task for parent-task-number.
+        \n* set default time HH:MM : set the HH:MM as default time.
         \n* set default date today+n: set the default date to current date+n
         \n* default date is today: set the current date as default date
         \n* set default date <DD-MM-YYYY>: set the default date to specified DD-MM-YYYY"
@@ -480,9 +481,6 @@ class Todos
 		items      = @getItems(user)
 		totalItems = items.length
 
-		
-
-
 		if item > totalItems
 			if totalItems > 0
 				message = "That item doesn't exist."
@@ -495,11 +493,21 @@ class Todos
 		else
 			task = items[item-1]
 			task.description = desc
+			doesTimeExist = @doesTimeExist(desc)
+			if doesTimeExist > 0
+				hour = desc.slice(doesTimeExist+1,doesTimeExist+3)
+				minutes = desc.slice(doesTimeExist+4,doesTimeExist+6)
+				task.time = hour+":"+minutes
 			@robot.brain.data.todos[user.id].splice(item - 1, 1,task)
 
 		message = "Item updated."
 		msg.send message
 
+	doesTimeExist: (desc) =>
+		if desc?
+			return desc.indexOf("@")
+		else
+			return -1
 
 	clearAllItems: (user) => @robot.brain.data.todos[user.id].length = 0
 

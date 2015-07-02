@@ -77,7 +77,8 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - to set default date for task
       - set default time HH:MM
         - to set default time for task 
-    - To be added
       - modify (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
+    - To be added
+      - list tabular display view - Table view requires better organization of contents.
   - Examples

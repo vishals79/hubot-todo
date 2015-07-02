@@ -75,9 +75,9 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - to set default date for task
       - default date is today
         - to set default date for task
+      - set default time HH:MM
+        - to set default time for task 
     - To be added
       - modify (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
-      - set default time HH:MM
-        - to set default time for task 
   - Examples
