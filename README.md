@@ -71,11 +71,13 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         -  add sub task for parent-task-number.
       - set date today/today+n for (task-number)
         - to provide user the feasibility to mark date using text. It will also handle arithmetic expression like today+1/2/3...
+      - set default date DD-MM-YYYY|today+n
+        - to set default date for task
+      - default date is today
+        - to set default date for task
     - To be added
       - modify (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
-      - set default date DD-MM-YYYY|today+n
-        - to set default date for task
       - set default time HH:MM
         - to set default time for task 
   - Examples

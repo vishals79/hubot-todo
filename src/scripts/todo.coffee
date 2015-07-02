@@ -36,17 +36,25 @@ class Todos
 		@robot.respond /note (.*) for ([0-9]+)/i, @addNote
 		@robot.respond /subtask (.*) for ([0-9]+)/i, @addSubtask
 		@robot.respond /finish ([0-9]+)/i, @markTaskAsFinish
+		@robot.respond /set default date (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDefaultDate
+		@robot.respond /set default date today\+([0-9]+)/i, @setDefaultDateExpression
+		@robot.respond /default date is today/i, @setDefaultTodayDate
 
 	help: (msg) =>
 		message = "* do (task-description): A task will be added with task description and default date (current date) and time values.
    	    \n* modify (task-number) with (task-description): update the description of the mentioned task-number.
         \n* set time (time in the format hh:mm) for (task number): Modify the time for the mentioned task.
         \n* set date (date in the format DD-MM-YYYY) for (task number): Modify the date for the mentioned task.
+        \n* set date today+n for (task number): Modify the date to be current day + n number of days for the mentioned task.
+        \n* set date today for (task number): Modify the date to be current day for the mentioned task.
         \n* note (note-description) for (task number): add note for the mentioned task.
         \n* remove (task number): remove the mentioned task and all its child tasks and modify the parent task accordingly.
         \n* list: display the list of tasks on chronological basis.
         \n* finish (task-number): mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
-        \n* subtask (description) child of (parent-task-number): add sub task for parent-task-number."
+        \n* subtask (description) child of (parent-task-number): add sub task for parent-task-number.
+        \n* set default date today+n: set the default date to current date+n
+        \n* default date is today: set the current date as default date
+        \n* set default date <DD-MM-YYYY>: set the default date to specified DD-MM-YYYY"
 
 		msg.send message
 
@@ -87,6 +95,65 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Item updated."
+		msg.send message
+
+	setDefaultDate: (msg) =>
+		user 	   = msg.message.user
+		user_id = user.id
+		default_date_key = user_id+"_"+"default_date_key"
+		date = msg.match[2]
+		month = msg.match[3]
+		year = msg.match[4]
+
+		task_date = new Date(year,month,date)
+
+		date_str = date+"-"+month+"-"+year
+
+		@robot.brain.data.todos[default_date_key] = []
+		@robot.brain.data.todos[default_date_key].push(date_str)
+		@robot.brain.data.todos[default_date_key].push(task_date)
+
+		message = "Default date set to #{date_str}"
+		msg.send message
+
+	setDefaultDateExpression: (msg) =>
+		user 	   = msg.message.user
+		user_id = user.id
+		default_date_key = user_id+"_"+"default_date_key"
+		value = msg.match[1]
+
+		task_date = new Date()
+		task_date.setDate(task_date.getDate()+parseInt(value))
+		year = task_date.getFullYear()
+		month = task_date.getMonth()
+		date = task_date.getDate()
+
+		date_str = date+"-"+month+"-"+year
+
+		@robot.brain.data.todos[default_date_key] = []
+		@robot.brain.data.todos[default_date_key].push(date_str)
+		@robot.brain.data.todos[default_date_key].push(task_date)
+
+		message = "Default date set to #{date_str}"
+		msg.send message
+
+	setDefaultTodayDate: (msg) =>
+		user 	   = msg.message.user
+		user_id = user.id
+		default_date_key = user_id+"_"+"default_date_key"
+
+		task_date = new Date()
+		year = task_date.getFullYear()
+		month = task_date.getMonth()
+		date = task_date.getDate()
+
+		date_str = date+"-"+month+"-"+year
+
+		@robot.brain.data.todos[default_date_key] = []
+		@robot.brain.data.todos[default_date_key].push(date_str)
+		@robot.brain.data.todos[default_date_key].push(task_date)
+
+		message = "Default date set to #{date_str}"
 		msg.send message
 
 	setDateWithExpression: (msg) =>
@@ -320,13 +387,16 @@ class Todos
 
 		tasks = {description:task_desc}
 
-		task_date = new Date()
-		task_date = new Date(task_date.getFullYear(),task_date.getMonth(),task_date.getDate())
-		year = task_date.getFullYear()
-		month = task_date.getMonth()
-		date = task_date.getDate()
-
-		date_str = date+"-"+month+"-"+year
+		if @robot.brain.data.todos[user.id+"_"+"default_date_key"]?
+			date_str = @robot.brain.data.todos[user.id+"_"+"default_date_key"][0]
+			task_date = @robot.brain.data.todos[user.id+"_"+"default_date_key"][1]
+		else
+			task_date = new Date()
+			task_date = new Date(task_date.getFullYear(),task_date.getMonth(),task_date.getDate())
+			year = task_date.getFullYear()
+			month = task_date.getMonth()
+			date = task_date.getDate()
+			date_str = date+"-"+month+"-"+year
 
 		hour = "00"
 		minute = "00"
