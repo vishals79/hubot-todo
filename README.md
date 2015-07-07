@@ -81,4 +81,5 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - update the task's description. Time is optional(format @hh:mm)
     - To be added
       - list tabular display view - Table view requires better organization of contents.
+      - Deploy at Heroku
   - Examples
