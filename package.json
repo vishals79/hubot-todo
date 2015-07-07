@@ -1,38 +1,49 @@
 {
-  "name": "hubot-todo",
+  "name": "hubot-slack",
   "version": "1.0.0",
-  "description": "A Hubot script that manage TODOs",
-  "main": "index.coffee",
-  "scripts": {
-    "robot": "hubot --adapter shell",
-    "test": "mocha --require espower-coffee/guess --reporter spec test/**/*.coffee"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/vishals79/hubot-todo.git"
-  },
-  "keywords": [
-    "hubot",
-    "hubot-scripts"
-  ],
   "author": {
     "name": "vishal singh",
-    "mail": "",
     "url": ""
   },
-  "license": "",
+  "contributors": [
+    {
+      "name": "vishal singh",
+      "email": ""
+    }
+  ],
+  "keywords": [
+    "hubot",
+    "adapter",
+    "slack"
+  ],
+  "description": "A Slack adapter for hubot",
+  "licenses": [
+    {
+      "type": "",
+      "url": ""
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vishals79/hubot-todo.git"
+  },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/vishals79/hubot-todo/issues",
+    "email": ""
   },
-  "homepage": "",
   "devDependencies": {
-    "espower-coffee": "^0.1.0",
-    "hubot": "^2.8.0",
-    "mocha": "^1.20.1",
-    "power-assert": "^0.7.2",
-    "sinon": "^1.10.3"
+    "coffee-script": "~1.7.1",
+    "hubot": "~2.11"
   },
-  "peerDependencies": {
-    "coffee-script": "1.7.x"
+  "main": "./index",
+  "engines": {
+    "node": ">=0.4.7"
+  },
+  "scripts": {
+    "test": "mocha --compilers coffee:coffee-script/register --reporter spec"
+  },
+  "dependencies": {
+    "slack-client": "~1.4.0"
   }
 }
+
