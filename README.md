@@ -3,46 +3,47 @@
 A Hubot script that manages TODOs.
 
 ## How to install
-	- node.js and npm
+
+### Install node.js and npm
 	  Follow this link to install node.js and npm - http://joyent.com/blog/installing-node-and-npm
 
-           Fixing npm permissions
+       	    Fixing npm permissions
 	        https://docs.npmjs.com/getting-started/fixing-npm-permissions
-		- mkdir ~/npm-global
-		- npm config set prefix '~/npm-global'
-		- export PATH=~/npm-global/bin:$PATH
-		- source ~/.profile
+	 	- mkdir ~/npm-global
+	 	- npm config set prefix '~/npm-global'
+	 	- export PATH=~/npm-global/bin:$PATH
+	 	- source ~/.profile
 
-	- Install redis
+### Install redis
 	  - wget http://download.redis.io/releases/redis-3.0.2.tar.gz
 	  - tar xzf redis-3.0.2.tar.gz
 	  - cd redis-3.0.2
 	  - make
        	  - src/redis-server
 
-        - Install Hubot
+### Install Hubot
 	  npm install -g hubot coffee-script yo generator-hubot
 	  mkdir -p /path/to/hubot
 	  cd /path/to/hubot
 	  yo hubot
 	
-          For reference follow : https://hubot.github.com/docs/ and https://github.com/slackhq/hubot-slack
+       	  For reference follow : https://hubot.github.com/docs/ and https://github.com/slackhq/hubot-slack
 
-        - Add hubot slack as dependency 
-          npm install hubot-slack --save
+### Add hubot slack as dependency 
+       	  npm install hubot-slack --save
 
-        - Add hubot todo as dependency 
-          npm install hubot-todo --save    
+### Add hubot todo as dependency 
+       	  npm install hubot-todo --save
 
-        - Add hubot todo to external-scripts.json 
-          [
+### Add hubot todo to external-scripts.json 
+       [
 	  "hubot-youtube"
-	  ] 
+       ] 
 
 ## How to run
        - Navigate to /path/to/hubot/
        - HUBOT_SLACK_TOKEN=(API Token) ./bin/hubot -a slack
-         you can also set HUBOT_SLACK_TOKEN as your environment variable
+       	 you can also set HUBOT_SLACK_TOKEN as your environment variable
 
 ## Example
 ### 1. do
