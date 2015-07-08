@@ -40,6 +40,7 @@ class Todos
 		@robot.respond /set default date today\+([0-9]+)/i, @setDefaultDateExpression
 		@robot.respond /default date is today/i, @setDefaultTodayDate
 		@robot.respond /set default time ([0-9]{2}):([0-9]{2})/i, @setDefaultTime
+		@robot.respond /show ([0-9]+)/i, @showTask
 
 	help: (msg) =>
 		message = "* do (task-description): A task will be added with task description and default date (current date) and time values.
@@ -56,7 +57,44 @@ class Todos
         \n* set default time HH:MM : set the HH:MM as default time.
         \n* set default date today+n: set the default date to current date+n
         \n* default date is today: set the current date as default date
+        \n* show (task number): show details of the task
         \n* set default date <DD-MM-YYYY>: set the default date to specified DD-MM-YYYY"
+
+		msg.send message
+
+	showTask: (msg) =>
+		user 	   = msg.message.user
+		task_number = msg.match[1]
+
+		items      = @getItems(user)
+		totalItems = items.length
+
+		
+
+
+		if task_number > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			task = items[task_number-1]
+			desc = task["description"]
+			date_str = task["date_str"]
+			time = task["time"]
+			if task["note"]?
+				note = task["note"]
+			else
+				note = ""
+			if task["status"]?
+				status = "Complete"
+			else
+				status = "Incomplete"
+			message = "Task Number\n#{task_number}\n\nDescription\n#{desc}\n\nDate\n#{date_str} #{time}\n\nStatus\n#{status}\n\nNote\n#{note}"
 
 		msg.send message
 
@@ -492,12 +530,14 @@ class Todos
 			return
 		else
 			task = items[item-1]
-			task.description = desc
 			doesTimeExist = @doesTimeExist(desc)
 			if doesTimeExist > 0
 				hour = desc.slice(doesTimeExist+1,doesTimeExist+3)
 				minutes = desc.slice(doesTimeExist+4,doesTimeExist+6)
 				task.time = hour+":"+minutes
+				task.description = desc.slice(0,doesTimeExist)
+			else
+				task.description = desc
 			@robot.brain.data.todos[user.id].splice(item - 1, 1,task)
 
 		message = "Item updated."
@@ -581,31 +621,33 @@ class Todos
 			task_string = []
 			desc_length = 0
 			note_length = 0
-			empty_date = "          "
+			empty_date = " "
 			empty_status = " "
-			empty_desc = "                         "
-			empty_note = "               "
+			empty_desc = " "
+			empty_note = " "
 			if msg["description"]?
 				desc_length = msg["description"].length
 			if desc_length > 0
 				if msg["note"]?
-					note_length = msg["note"].length
-				task_string.push(index)
+					note_length = 0
+				task_string.push(index+".  ")
 				desc_str = msg["description"]
 				desc_start_index = 0
 				node_start_index = 0
 				if desc_length < 25
 					padding_desc = 25-desc_length
 					while padding_desc > 0
-						desc_str += " "
+						desc_str += "  "
 						--padding_desc
 					task_string.push(desc_str)
 					desc_start_index = desc_length
 				else	
 					task_string.push(msg["description"].substring(desc_start_index,desc_start_index+25))
 					desc_start_index = desc_start_index+25
+				task_string.push("                 ")
 				task_string.push(msg["date_str"]+" "+msg["time"])
 				if msg["status"]?
+					task_string.push("                 ")
 					task_string.push(msg["status"])
 				else
 					task_string.push(empty_status)
@@ -614,7 +656,7 @@ class Todos
 						note_str = msg["note"]
 						padding_note = 15-note_length
 						while padding_note > 0
-						 note_str += " "
+						 note_str += "  "
 						 --padding_note
 						task_string.push(note_str)
 						node_start_index = note_length
@@ -625,7 +667,8 @@ class Todos
 					task_string.push(empty_note)
 
 				while desc_start_index < desc_length or node_start_index < note_length
-					task_string.push("\n"+"  ")
+					task_string.push("\n")
+					task_string.push("  ")
 					if desc_start_index < desc_length
 						if (desc_length - desc_start_index) < 25
 							desc_str = msg["description"].substring(desc_start_index,desc_length)
@@ -639,16 +682,17 @@ class Todos
 							task_string.push(msg["description"].substring(desc_start_index,desc_start_index+25))
 							desc_start_index = desc_start_index+25
 					else
-						task_string.push("                                                         ")
+						task_string.push(empty_desc)
 
-					task_string.push("                                             ")
+					task_string.push(empty_date)
+					task_string.push(empty_status)
 
 					if node_start_index < note_length
 						if (note_length - node_start_index) < 15
 							note_str = msg["note"].substring(node_start_index,note_length)
 							padding_note = note_length-node_start_index
 							while padding_note > 0
-							 note_str += " "
+							 note_str += "   "
 							 --padding_note
 							task_string.push(note_str)
 							node_start_index = note_length
