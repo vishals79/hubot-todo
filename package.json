@@ -1,5 +1,5 @@
 {
-  "name": "hubot-slack",
+  "name": "hubot-todo",
   "version": "1.0.0",
   "author": {
     "name": "vishal singh",
@@ -16,7 +16,7 @@
     "adapter",
     "slack"
   ],
-  "description": "A Slack adapter for hubot",
+  "description": "A task management hubot",
   "licenses": [
     {
       "type": "",
@@ -40,7 +40,7 @@
     "node": ">=0.4.7"
   },
   "scripts": {
-    "test": "mocha --compilers coffee:coffee-script/register --reporter spec"
+    "test": "echo \"Error: No test specified\" && exit 1"
   },
   "dependencies": {
     "slack-client": "~1.4.0"
