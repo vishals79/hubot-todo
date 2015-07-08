@@ -7,7 +7,7 @@ A Hubot script that manages TODOs.
 ### Install node.js and npm
 	  Follow this link to install node.js and npm - http://joyent.com/blog/installing-node-and-npm
 
-       	    Fixing npm permissions (https://docs.npmjs.com/getting-started/fixing-npm-permissions)
+	  Fixing npm permissions (https://docs.npmjs.com/getting-started/fixing-npm-permissions)
 	    - mkdir ~/npm-global
 	    - npm config set prefix '~/npm-global'
 	    - export PATH=~/npm-global/bin:$PATH
@@ -119,7 +119,8 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - to set default time for task 
       - modify (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
+      - show (task number)
+        - show details of the task
     - To be added
-      - list tabular display view - Table view requires better organization of contents.
       - Deploy at Heroku
   - Examples
