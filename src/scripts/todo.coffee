@@ -57,8 +57,8 @@ class Todos
         \n* set default time HH:MM : set the HH:MM as default time.
         \n* set default date today+n: set the default date to current date+n
         \n* default date is today: set the current date as default date
-        \n* show (task number): show details of the task
-        \n* set default date <DD-MM-YYYY>: set the default date to specified DD-MM-YYYY"
+        \n* show (task number): show details of the task 
+        \n* set default date <DD-MM-YYYY>: set default date to specified DD-MM-YYYY"
 
 		msg.send message
 
@@ -667,7 +667,7 @@ class Todos
 
 				while desc_start_index < desc_length or node_start_index < note_length
 					task_string.push("\n")
-					task_string.push("                                                                               ")
+					task_string.push("                                          x                                     ")
 					if desc_start_index < desc_length
 						if (desc_length - desc_start_index) < 25
 							desc_str = msg["description"].substring(desc_start_index,desc_length)
