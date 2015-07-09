@@ -143,6 +143,10 @@ class Todos
 		default_time_key = user_id+"_"+"default_time_key"
 		hour = msg.match[1]
 		minutes = msg.match[2]
+		isValidTime = @isValidTime(hour,minutes)
+		if isValidTime != 1
+			msg.send "Opps! It seems time format is not correct.\n Time Format : HH:MM\n00 <= HH <= 23\n00<= MM <=59"
+			return
 
 		time_str = hour+":"+minutes
 
@@ -159,6 +163,10 @@ class Todos
 		date = msg.match[2]
 		month = msg.match[3]
 		year = msg.match[4]
+		isValidDate = @isValidDate(date,month,year)
+		if isValidDate != 1
+			msg.send "Opps! It seems time format is not correct.\n Date Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
+			return
 
 		task_date = new Date(year,month,date)
 
@@ -381,6 +389,10 @@ class Todos
 		month = msg.match[3]
 		year = msg.match[4]
 		task_number = msg.match[5]
+		isValidDate = @isValidDate(date,month,year)
+		if isValidDate != 1
+			msg.send "Opps! It seems date format is not correct.\n Date Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
+			return
 
 		items      = @getItems(user)
 		totalItems = items.length
@@ -407,11 +419,37 @@ class Todos
 		message = "Item updated."
 		msg.send message
 
+	isValidDate: (date,month,year) =>
+		if date? and month? and year?
+		 date_str = date+"-"+month+"-"+year
+		 doesMatch = date_str.match /(0[1-9]|[1-2][0-9]|3[0-1])-(0[1-9]|1[0-1])-(201[5-9]|20[2-9][0-9])/
+		 if doesMatch?
+		   return 1
+		 else
+		   return -1
+		else
+		   return -1
+
+	isValidTime: (hh,mm) =>
+		if hh? and mm?
+		 time_str = hh+":"+mm
+		 doesMatch = time_str.match /(0[0-9]|1[0-9]|2[0-3]):(0[0-9]|[1-5][0-9]|60)/
+		 if doesMatch?
+		   return 1
+		 else
+		   return -1
+		else
+		   return -1
+
 	setTime: (msg) =>
 		user 	   = msg.message.user
 		task_hour= msg.match[1]
 		task_minute = msg.match[2]
 		task_number = msg.match[3]
+		isValidTime = @isValidTime(task_hour,task_minute)
+		if isValidTime != 1
+			msg.send "Opps! It seems time format is not correct.\n Time Format : HH:MM\n00 <= HH <= 23\n00<= MM <=59"
+			return
 
 		items      = @getItems(user)
 		totalItems = items.length
@@ -667,7 +705,7 @@ class Todos
 
 				while desc_start_index < desc_length or node_start_index < note_length
 					task_string.push("\n")
-					task_string.push("                                          x                                     ")
+					task_string.push("                                                                                ")
 					if desc_start_index < desc_length
 						if (desc_length - desc_start_index) < 25
 							desc_str = msg["description"].substring(desc_start_index,desc_length)
