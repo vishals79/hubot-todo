@@ -622,7 +622,7 @@ class Todos
 			desc_length = 0
 			note_length = 0
 			empty_date = " "
-			empty_status = " "
+			empty_status = "I  "
 			empty_desc = " "
 			empty_note = " "
 			if msg["description"]?
@@ -631,6 +631,12 @@ class Todos
 				if msg["note"]?
 					note_length = 0
 				task_string.push(index+".  ")
+				task_string.push(msg["date_str"]+" "+msg["time"])
+				if msg["status"]?
+					task_string.push(msg["status"])
+				else
+					task_string.push(empty_status)
+				task_string.push("                 ")
 				desc_str = msg["description"]
 				desc_start_index = 0
 				node_start_index = 0
@@ -644,13 +650,6 @@ class Todos
 				else	
 					task_string.push(msg["description"].substring(desc_start_index,desc_start_index+25))
 					desc_start_index = desc_start_index+25
-				task_string.push("                 ")
-				task_string.push(msg["date_str"]+" "+msg["time"])
-				if msg["status"]?
-					task_string.push("                 ")
-					task_string.push(msg["status"])
-				else
-					task_string.push(empty_status)
 				if note_length > 0	
 					if 	note_length < 15
 						note_str = msg["note"]
@@ -668,7 +667,7 @@ class Todos
 
 				while desc_start_index < desc_length or node_start_index < note_length
 					task_string.push("\n")
-					task_string.push("  ")
+					task_string.push("                                                                               ")
 					if desc_start_index < desc_length
 						if (desc_length - desc_start_index) < 25
 							desc_str = msg["description"].substring(desc_start_index,desc_length)
@@ -683,9 +682,6 @@ class Todos
 							desc_start_index = desc_start_index+25
 					else
 						task_string.push(empty_desc)
-
-					task_string.push(empty_date)
-					task_string.push(empty_status)
 
 					if node_start_index < note_length
 						if (note_length - node_start_index) < 15
