@@ -53,23 +53,41 @@ A Hubot script that manages TODOs.
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-list.jpg "list")
 
 ### 3. modify
-	modify <task-number> with <task-description>
+	modify <task-number> <task-description>
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-modify.jpg "modify")
 
 ### 4. set time
-	set time <time in the format hh:mm> for <task number>
+#### set time <time in the format hh:mm> for <task number>
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-settime.jpg "set time")
 
+#### set default time <time in the format hh:mm>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaulttime.jpg "set time")
+
 ### 5. set date 
-	set date <date in the format DD-MM-YYYY> for <task number>
+#### set date <date in the format DD-MM-YYYY> for <task number>
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdate.jpg "set date")
+
+#### set date today for <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetoday.jpg "set date")
+
+#### set date today+n for <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetodayplusn.jpg "set date")
+
+#### set default date <date in the format DD-MM-YYYY> 
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdate.jpg "set date")
+
+#### default date is today
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaulttodaydate.jpg "set date")
+
+#### set default date today+n 
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdatetodayplusn.jpg "set date")
 
 ### 6. note
 	note <note-description> for <task number>
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-note.jpg "note")
 
-### 7. remove <task number>
-	remove <task number>
+### 7. remove
+	remove <task number>|all
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-remove.jpg "remove")
 
 ### 8. finish
@@ -79,6 +97,10 @@ A Hubot script that manages TODOs.
 ### 9. subtask
 	subtask <description> for <parent-task-number>
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-subtask.jpg "subtask")
+
+### 10.show
+      	show <task number>
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-show.jpg "todo help")
 
 ### 10. todo help
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-help.jpg "todo help")
