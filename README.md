@@ -36,7 +36,7 @@ A Hubot script that manages TODOs.
 
 ### Add hubot todo to external-scripts.json 
        [
-	  "hubot-youtube"
+	  "hubot-todo"
        ] 
 
 ## How to run
