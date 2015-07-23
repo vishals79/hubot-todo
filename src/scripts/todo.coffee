@@ -7,15 +7,6 @@
 #   None
 #
 # Commands:
-#    do (task-description): A task will be added with task description and default date (current date) and time (mid-night) values.
-#    modify (task-number) with (task-description): A task will be added with task description and default date (current date) and time (mid-night) values.
-#    set time (time in the format hh:mm) for (task number): Modify the time for the mentioned task.
-#    set date (date in the format DD-MM-YYYY) for (task number): Modify the date for the mentioned task.
-#    add note (note-description) for (task number): add note for the mentioned task.
-#    remove (task number): remove the mentioned task and all its child tasks and modify the parent task accordingly.
-#    list: display the list of tasks on chronological basis.
-#    finish (task-number): mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
-#    subtask (description) child of (parent-task-number): add sub task for parent-task-number.
 #
 # Author:
 #   vishal singh
@@ -27,7 +18,7 @@ class Todos
 		@robot.respond /do (.*)/i, @addItem
 		@robot.respond /remove ([0-9]+|all)/i, @removeItem
 		@robot.respond /list/i, @listItems
-		@robot.respond /todo help/i, @help
+		@robot.respond /help/i, @help
 		@robot.respond /modify ([0-9]+) (.*)/i, @updateItem
 		@robot.respond /set time ([0-9]{2}):([0-9]{2}) for ([0-9]+)/i, @setTime
 		@robot.respond /set date (([0-9]{2})-([0-9]{2})-([0-9]{4})) for ([0-9]+)/i, @setDate
@@ -44,21 +35,21 @@ class Todos
 
 	help: (msg) =>
 		message = "* do (task-description): A task will be added with task description and default date (current date) and time values.
-   	    \n* modify (task-number) with (task-description): update the description of the mentioned task-number.
+   	    \n* modify (task-number) (task-description): update the description of the mentioned task-number.
         \n* set time (time in the format hh:mm) for (task number): Modify the time for the mentioned task.
         \n* set date (date in the format DD-MM-YYYY) for (task number): Modify the date for the mentioned task.
         \n* set date today+n for (task number): Modify the date to be current day + n number of days for the mentioned task.
         \n* set date today for (task number): Modify the date to be current day for the mentioned task.
         \n* note (note-description) for (task number): add note for the mentioned task.
-        \n* remove (task number): remove the mentioned task and all its child tasks and modify the parent task accordingly.
+        \n* remove (task number): remove the mentioned task.
         \n* list: display the list of tasks on chronological basis.
-        \n* finish (task-number): mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
-        \n* subtask (description) child of (parent-task-number): add sub task for parent-task-number.
-        \n* set default time HH:MM : set the HH:MM as default time.
-        \n* set default date today+n: set the default date to current date+n
+        \n* finish (task-number): mark the specified task as complete.
+        \n* subtask (description) for (parent-task-number): add sub task for parent-task-number.
+        \n* set default time HH:MM : set HH:MM as default time.
+        \n* set default date today+n: set default date to be current date+n
         \n* default date is today: set the current date as default date
         \n* show (task number): show details of the task 
-        \n* set default date <DD-MM-YYYY>: set default date to specified DD-MM-YYYY"
+        \n* set default date <DD-MM-YYYY>: set default date to DD-MM-YYYY"
 
 		msg.send message
 
