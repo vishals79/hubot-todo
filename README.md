@@ -113,36 +113,38 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
 - Hubot Todo - A todo app to help users in task management. It provides facility to add, update, delete and show tasks.
   - Commands in use
     - Current
-      - do (task-description)
-        - A task will be added with description and default date (current date) and time (00:00) values.
-      - modify (task-number) with (task-description)
-        - update the description of the mentioned task-number.
-      - set time (time in the format hh:mm) for (task number)
-        - Modify the time for the mentioned task.
-      - set date (date in the format DD-MM-YYYY) for (task number)
-        - Modify the date for the mentioned task.
-      - note (note-description) for (task number)
-        - add note for the mentioned task.
-      - remove (task number)
-        - remove the mentioned task and all its subtasks.
+      - add (task-description)
+        - A task will be added with task description, default date and time.
+      - modify (task-number) (task-description)
+        - It will update the description of the mentioned task-number. If task number is not specified, last added task present in the context 		  gets modified.   
+      - delete (task number|all)
+        - If task number is not specified, last added task present in the context gets removed. 
+      - time (time in the format hh:mm)
+        - Modify time of the last added task.
+      - date (date in the format DD-MM-YYYY)
+        - Modify date of the last added task.
+      - date today+n
+        - Modify date of the last added task to current day + n number of days.
+      - subtask (description) for (parent-task-number)
+        - Add sub task for parent-task-number.
       - list
         - display the list of tasks on chronological basis.
+      - default time HH:MM
+        -  Set HH:MM as default time.
+      - default date today+n
+        -  Set default date to current date+n
+      - show (task number)
+        - Show details of the task.
+      - note (note-description) for (task number)
+        - Add note for (task number)
       - finish (task-number)
-        -  mark the specified task as complete.
-      - subtask (description) for (parent-task-number)
-        -  add sub task for parent-task-number.
-      - set date today/today+n for (task-number)
-        - to provide user the feasibility to mark date using text. It will also handle arithmetic expression like today+1/2/3...
-      - set default date DD-MM-YYYY|today+n
-        - to set default date for task
-      - default date is today
-        - to set default date for task
-      - set default time HH:MM
-        - to set default time for task 
+        - Mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
+      - default date (DD-MM-YYYY)
+        - Set default date to (DD-MM-YYYY) 
       - modify (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
-      - show (task number)
-        - show details of the task
+      - Note: For modifying Time/Date for any particular task, specify (task-number) e.g. time for (task number) (time in the format hh:mm)
+
     - To be added
       - Modified command sets with new syntax - This will make commands easy to remember. (Present in the latest script)
       - Change in response given by hubot after execution of each commands. (Present in the latest script)
