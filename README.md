@@ -144,5 +144,7 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
       - show (task number)
         - show details of the task
     - To be added
-      - Deploy at Heroku
+      - Modified command sets with new syntax - This will make commands easy to remember. (Release on 24th July)
+      - Change in response given by hubot after execution of each commands. (Release on 23rd July)
+      - Tree structure - Addition of subtask with parent child relationships (Release on 27th July)
   - Examples
