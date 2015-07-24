@@ -32,7 +32,7 @@ class Todos
 		@robot.respond /default date (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDefaultDate
 		@robot.respond /default date today(\+([0-9]+)){0,1}/i, @setDefaultDateExpression
 		@robot.respond /default time ([0-9]{2}):([0-9]{2})/i, @setDefaultTime
-		@robot.respond /show ([0-9]+)/i, @showTask
+		@robot.respond /show( [0-9]+){0,1}/i, @showTask
 
 	help: (msg) =>
 		message = "\n*add <task-description>:\n A task will be added with task description, default date and time.
@@ -58,11 +58,23 @@ class Todos
 	showTask: (msg) =>
 		user 	   = msg.message.user
 		task_number = msg.match[1]
+		user_id = user.id
+		task_in_context = user_id+"_"+"task_in_context"
 
 		items      = @getItems(user)
 		totalItems = items.length
 
-		
+		if !task_number
+			if @robot.brain.data.todos[task_in_context]?
+				task_number = @robot.brain.data.todos[task_in_context][0]
+				if !task_number
+					message = "No task is present in the context.\nPlease specify the task number to be marked as complete."
+					msg.send message
+					return
+			else
+				message = "No task is present in the context.\nPlease specify the task number to be marked as complete."
+				msg.send message
+				return
 
 
 		if task_number > totalItems
@@ -87,7 +99,7 @@ class Todos
 				status = "Complete"
 			else
 				status = "Incomplete"
-			message = "Task Number\n#{task_number}\n\nDescription\n#{desc}\n\nDate\n#{date_str} #{time}\n\nStatus\n#{status}\n\nNote\n#{note}"
+			message = "\nTask Number: #{task_number}\n\nDescription:\n#{desc}\n\nDeadline:\nDate: #{date_str}\nTime: #{time}\n\nStatus:\n#{status}\n\nNote:\n#{note}"
 
 		msg.send message
 
@@ -122,8 +134,7 @@ class Todos
 			msg.send "Opps! It seems time format is not correct.\n Date Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
 			return
 
-		task_date = new Date(year,month,date)
-
+		task_date = new Date(year,month-1,date)
 		date_str = date+"-"+month+"-"+year
 
 		@robot.brain.data.todos[default_date_key] = []
@@ -150,7 +161,10 @@ class Todos
 			month = "0"+month
 		date = task_date.getDate()
 
-		date_str = date+"-"+month+"-"+year
+		display_month = ""+(task_date.getMonth()+parseInt(1))
+		if display_month.length < 2
+			display_month = "0"+display_month
+		date_str = date+"-"+display_month+"-"+year
 
 		@robot.brain.data.todos[default_date_key] = []
 		@robot.brain.data.todos[default_date_key].push(date_str)
@@ -184,10 +198,9 @@ class Todos
 			task = items[task_number-1]
 			oldDate = task.date_str
 			task_date = new Date()
-			task_date = new Date(task_date.getFullYear(),task_date.getMonth(),task_date.getDate())
 			task_date.setDate(task_date.getDate()+parseInt(value))
 			year = task_date.getFullYear()
-			month = ""+task_date.getMonth()
+			month = ""+(task_date.getMonth()+parseInt(1))
 			if month.length < 2
 				month = "0"+month
 			date = task_date.getDate()
@@ -245,7 +258,7 @@ class Todos
 			task_date = new Date(task_date.getFullYear(),task_date.getMonth(),task_date.getDate())
 			task_date.setDate(task_date.getDate()+parseInt(value))
 			year = task_date.getFullYear()
-			month = ""+task_date.getMonth()
+			month = ""+(task_date.getMonth()+parseInt(1))
 			if month.length < 2
 				month = "0"+month
 			date = task_date.getDate()
@@ -428,7 +441,7 @@ class Todos
 		else
 			task = items[task_number-1]
 			oldDate = task.date_str
-			task_date = new Date(year,month,date)
+			task_date = new Date(year,month-1,date)
 
 			date_str = date+"-"+month+"-"+year
 			task.date_str = date_str
@@ -468,7 +481,7 @@ class Todos
 
 		if task_number > totalItems
 			if totalItems > 0
-				message = "That item doesn't exist. #{totalItems} #{date} #{month} #{year} #{task_number}"
+				message = "Task number #{task_number} doesn't exist."
 			else
 				message = "There's nothing on your list at the moment"
 
@@ -478,7 +491,7 @@ class Todos
 		else
 			task = items[task_number-1]
 			oldDate = task.date_str
-			task_date = new Date(year,month,date)
+			task_date = new Date(year,month-1,date)
 
 			date_str = date+"-"+month+"-"+year
 			task.date_str = date_str
@@ -613,7 +626,10 @@ class Todos
 			year = task_date.getFullYear()
 			month = task_date.getMonth()
 			date = task_date.getDate()
-			date_str = date+"-"+month+"-"+year
+			display_month = ""+(task_date.getMonth()+parseInt(1))
+			if display_month.length < 2
+				display_month = "0"+display_month
+			date_str = date+"-"+display_month+"-"+year
 
 		if @robot.brain.data.todos[user.id+"_"+"default_time_key"]?
 			time_str = @robot.brain.data.todos[user.id+"_"+"default_time_key"][0]
