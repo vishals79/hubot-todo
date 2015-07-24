@@ -45,64 +45,70 @@ A Hubot script that manages TODOs.
        	 you can also set HUBOT_SLACK_TOKEN as your environment variable
 
 ## Example
-### 1. do
-	do (task-description)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-do.jpg "do")
+### 1. add|create
+	add|create (task-description)
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-add.jpg "add")
 
 ### 2. list
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-list.jpg "list")
 
-### 3. modify
-	modify (task-number) (task-description)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-modify.jpg "modify")
+### 3. update
+	update (task-number) (task-description), task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-update.jpg "update")
 
-### 4. set time
-#### set time (time in the format hh:mm) for (task number)
+### 4. time
+#### time for (task number) (time in the format hh:mm) 
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-settimefortask.jpg "set time for task")
+
+#### time (time in the format hh:mm)
+	This will update time of the last added task.
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-settime.jpg "set time")
 
-#### set default time (time in the format hh:mm)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaulttime.jpg "set time")
+#### default time (time in the format hh:mm)
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaulttime.jpg "set default time")
 
-### 5. set date 
-#### set date (date in the format DD-MM-YYYY) for (task number)
+### 5. date 
+#### date for (task number) (date in the format DD-MM-YYYY) 
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatefortask.jpg "set date for task")
+
+#### date (date in the format DD-MM-YYYY) 
+	This will update date of the last added task.
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdate.jpg "set date")
 
-#### set date today for (task number)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetoday.jpg "set date")
+#### date for (task number) today+n
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetodayfortask.jpg "set today+n date for task")
 
-#### set date today+n for (task number)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetodayplusn.jpg "set date")
+#### date today+n
+	This will update date of the last added task.
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetoday.jpg "set date today+n")
 
-#### set default date (date in the format DD-MM-YYYY) 
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdate.jpg "set date")
+#### default date (date in the format DD-MM-YYYY) 
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdate.jpg "set default date")
 
-#### default date is today
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaulttodaydate.jpg "set date")
+#### default date today+n 
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdatetodayplusn.jpg "set default date today+n")
 
-#### set default date today+n 
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdatetodayplusn.jpg "set date")
-
-### 6. note
-	note (note-description) for (task number)
+### 6. note (task number) (note-description)
+	note (task number) (note-description), task_number = last added task, if task_number is not provided
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-note.jpg "note")
 
-### 7. remove
-	remove (task number)|all
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-remove.jpg "remove")
+### 7. delete
+	delete (task number)|all, task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-delete.jpg "delete")
 
-### 8. finish
-	finish (task-number)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-finish.jpg "finish")
+### 8. complete
+	complete (task-number), task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-complete.jpg "complete")
 
 ### 9. subtask
 	subtask (description) for (parent-task-number)
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-subtask.jpg "subtask")
 
 ### 10.show
-      	show (task number)
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-show.jpg "todo help")
+      	show (task number), task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-show.jpg "todo show")
 
-### 10. todo help
+### 10. help
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-help.jpg "todo help")
 
 ## Configuration
@@ -149,4 +155,5 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
       - Modified command sets with new syntax - This will make commands easy to remember. (Present in the latest script)
       - Change in response given by hubot after execution of each commands. (Present in the latest script)
       - Tree structure - Addition of subtask with parent child relationships (Release on 27th July)
+      - Undo - To undo the last action (Release on 28th July)
   - Examples

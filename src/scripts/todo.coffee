@@ -644,7 +644,7 @@ class Todos
 
 	addItem: (msg) =>
 		user 	   = msg.message.user
-		task_desc = msg.match[1]
+		task_desc = msg.match[2]
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
 

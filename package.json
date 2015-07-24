@@ -1,6 +1,6 @@
 {
   "name": "hubot-todo",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "author": {
     "name": "vishal singh",
     "url": ""
@@ -14,6 +14,7 @@
   "keywords": [
     "hubot",
     "adapter",
+    "task management",
     "slack"
   ],
   "description": "A task management hubot",
