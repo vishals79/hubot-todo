@@ -15,41 +15,44 @@ class Todos
 	constructor: (@robot) ->
 		@robot.brain.data.todos = {}
 
-		@robot.respond /add (.*)/i, @addItem
+		@robot.respond /(add|create) (.*)/i, @addItem
 		@robot.respond /delete( [0-9]+| all){0,1}/i, @removeItem
 		@robot.respond /list/i, @listItems
 		@robot.respond /help/i, @help
-		@robot.respond /modify ([0-9]+){0,1}(.*)/i, @updateItem
+		@robot.respond /update ([0-9]+){0,1}(.*)/i, @updateItem
 		@robot.respond /time for ([0-9]+) ([0-9]{2}):([0-9]{2})/i, @setTime
 		@robot.respond /time ([0-9]{2}):([0-9]{2})/i, @setTimeForContext
 		@robot.respond /date for ([0-9]+) (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDate
 		@robot.respond /date (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDateForContext
 		@robot.respond /date for ([0-9]+) today(\+([0-9]+)){0,1}/i, @setDateWithExpression
 		@robot.respond /date today(\+([0-9]+)){0,1}/i, @setDateWithExpressionForContext
-		@robot.respond /note (.*) for ([0-9]+)/i, @addNote
+		@robot.respond /note ([0-9]+){0,1}(.*)/i, @addNote
 		@robot.respond /subtask (.*) for ([0-9]+)/i, @addSubtask
-		@robot.respond /finish( [0-9]+){0,1}/i, @markTaskAsFinish
+		@robot.respond /complete( [0-9]+){0,1}/i, @markTaskAsFinish
 		@robot.respond /default date (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDefaultDate
 		@robot.respond /default date today(\+([0-9]+)){0,1}/i, @setDefaultDateExpression
 		@robot.respond /default time ([0-9]{2}):([0-9]{2})/i, @setDefaultTime
 		@robot.respond /show( [0-9]+){0,1}/i, @showTask
 
 	help: (msg) =>
-		message = "\n*add <task-description>:\n A task will be added with task description, default date and time.
-   	    \n\n* modify <task-number> <task-description>:\n It will update the description of the mentioned task-number. If task number is not specified, last added task present in the context gets modified. 
-        \n\n* delete <task number|all>:\n Remove <task number>. If task number is not specified, last added task present in the context gets removed. 
-        \n\n* time <time in the format hh:mm>:\n Modify time of the last added task.
-        \n\n* date <date in the format DD-MM-YYYY>:\n Modify date of the last added task.
-        \n\n* date today+n:\n Modify date of the last added task to current day + n number of days.
-        \n\n* list:\n Display the list of tasks on chronological basis.
-        \n\n* subtask <description> for <parent-task-number>:\n Add sub task for parent-task-number.
-        \n\n* default time HH:MM :\n Set HH:MM as default time.
-        \n\n* default date today+n:\n Set default date to current date+n
-        \n\n* show <task number>:\n Show details of the task 
-        \n\n* note <note-description> for <task number>:\n Add note for <task number>
-        \n\n* finish <task-number>:\n Mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
-        \n\n* default date <DD-MM-YYYY>:\n Set default date to <DD-MM-YYYY>
-        \n Note: For modifying Time/Date for any particular task specify <task-number> e.g. time for <task number> <time in the format hh:mm>"
+		message = "\n*add|create <task-description>
+   	    \n\n* update <task-number> <task-description>
+        \n* delete <task number|all>
+        \n* show <task number>
+        \n* note <task number> <note-description>
+        \n* complete <task-number>
+        \n  task_number = last added task, if <task_number> not provided
+        \n\n\n* time <time in the format hh:mm>: For last added task.
+        \n* date <date in the format DD-MM-YYYY>: For last added task.
+        \n* date today+n: For last added task.
+        \n* list
+        \n* subtask <description> for <parent-task-number>
+        \n* default time HH:MM
+        \n* default date today+n
+        \n* default date <DD-MM-YYYY>
+        \n* time for <task number> <time in the format hh:mm>: For any particular task.
+        \n* date for <task number> <DD-MM-YYYY>: For any particular task.
+        \n* date for <task number> today+n: For any particular task."
         
         
 
@@ -101,6 +104,8 @@ class Todos
 				status = "Incomplete"
 			message = "\nTask Number: #{task_number}\n\nDescription:\n#{desc}\n\nDeadline:\nDate: #{date_str}\nTime: #{time}\n\nStatus:\n#{status}\n\nNote:\n#{note}"
 
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	setDefaultTime: (msg) =>
@@ -217,6 +222,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	setDateWithExpressionForContext: (msg) =>
@@ -275,6 +282,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	markTaskAsFinish: (msg) =>
@@ -313,6 +322,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,item)
 
 		message = "Task status updated.\n\n Task Number: #{task_number}\n Date: #{item.date_str}\n Time: #{item.time}\n Status: Complete\n Description: #{item.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	addSubtask: (msg) =>
@@ -341,6 +352,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_parent_number - 1, 1,item)
 
 		message = "Sub task added."
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	addChild: (msg) =>
@@ -387,14 +400,27 @@ class Todos
 
 	addNote: (msg) =>
 		user 	   = msg.message.user
-		note       = msg.match[1]
-		task_number = msg.match[2]
+		note       = msg.match[2]
+		task_number = msg.match[1]
 
 		items      = @getItems(user)
 		totalItems = items.length
 
+		user_id = user.id
+		task_in_context = user_id+"_"+"task_in_context"
 		
 
+		if !task_number
+			if @robot.brain.data.todos[task_in_context]?
+				task_number = @robot.brain.data.todos[task_in_context][0]
+				if !task_number
+					message = "No task is present in the context.\nPlease specify the task number to upadte."
+					msg.send message
+					return
+			else
+				message = "No task is present in the context.\nPlease specify the task number to update."
+				msg.send message
+				return
 
 		if task_number > totalItems
 			if totalItems > 0
@@ -411,7 +437,9 @@ class Todos
 
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
-		message = "Note added."
+		message = "Task Number: #{task_number}\n\nNote: #{note}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	setDate: (msg) =>
@@ -450,6 +478,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	setDateForContext: (msg) =>
@@ -500,6 +530,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 
@@ -557,6 +589,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Task Number: #{task_number}\n\n Old time: #{oldTime}\n New Time: #{task.time}\n Description: #{task.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	setTimeForContext: (msg) =>
@@ -604,6 +638,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
 
 		message = "Task Number: #{task_number}\n\n Old time: #{oldTime}\n New Time: #{task.time}\n Description: #{task.description}"
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	addItem: (msg) =>
@@ -653,7 +689,8 @@ class Todos
 		@robot.brain.data.todos[task_in_context].push(totalItems)
 
 		message = "New task added in your list.\n\n Task Number: #{totalItems}\n\n Deadline\nDate: #{date_str}\n Time: #{time_str}\n\n Description: #{task_desc}"
-
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	removeItem: (msg) =>
@@ -699,17 +736,15 @@ class Todos
 			@robot.brain.data.todos[task_in_context] = []
 			message = "All items deleted from list."
 		else
-			if item < @robot.brain.data.todos[task_in_context][0]
-				@robot.brain.data.todos[task_in_context][0] = @robot.brain.data.todos[task_in_context][0]-1
-			else
-				@robot.brain.data.todos[task_in_context] = []
-
+			@robot.brain.data.todos[task_in_context][0] = totalItems-1
 			task = items[item-1]
 			date = task.date_str
 			time = task.time
 			desc = task.description
 			@robot.brain.data.todos[user.id].splice(item - 1, 1)
 			message = "Task deleted from list.\n\n Task Number: #{item}\n\nDeadline \nDate: #{date}\nTime: #{time}\n\nDescription: #{desc}"
+			message += "\n\n"
+			message += @createListMessage(user)
 
 		msg.send message
 
@@ -761,6 +796,8 @@ class Todos
 				message = "Details updated.\n\nTask Number: #{item}\n\nPrevious\n Description: #{oldTaskDesc}\n\nCurrent\n Description: #{task.description}"
 			@robot.brain.data.todos[user.id].splice(item - 1, 1,task)
 
+		message += "\n\n"
+		message += @createListMessage(user)
 		msg.send message
 
 	doesTimeExist: (desc) =>

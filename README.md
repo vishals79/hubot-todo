@@ -113,11 +113,11 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
 - Hubot Todo - A todo app to help users in task management. It provides facility to add, update, delete and show tasks.
   - Commands in use
     - Current
-      - add (task-description)
+      - add|create (task-description)
         - A task will be added with task description, default date and time.
-      - modify (task-number) (task-description)
+      - update (task-number) (task-description) ,where task-number is optional
         - It will update the description of the mentioned task-number. If task number is not specified, last added task present in the context 		  gets modified.   
-      - delete (task number|all)
+      - delete (task number|all) ,where task-number is optional
         - If task number is not specified, last added task present in the context gets removed. 
       - time (time in the format hh:mm)
         - Modify time of the last added task.
@@ -133,15 +133,15 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         -  Set HH:MM as default time.
       - default date today+n
         -  Set default date to current date+n
-      - show (task number)
+      - show (task number) ,where task-number is optional
         - Show details of the task.
-      - note (note-description) for (task number)
+      - note (task number) (note-description) ,where task-number is optional
         - Add note for (task number)
-      - finish (task-number)
+      - complete (task-number) ,where task-number is optional
         - Mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
       - default date (DD-MM-YYYY)
         - Set default date to (DD-MM-YYYY) 
-      - modify (task-number) with (task-description) @hh:mm 
+      - update (task-number) with (task-description) @hh:mm 
         - update the task's description. Time is optional(format @hh:mm)
       - Note: For modifying Time/Date for any particular task, specify (task-number) e.g. time for (task number) (time in the format hh:mm)
 
