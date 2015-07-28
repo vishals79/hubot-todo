@@ -68,7 +68,7 @@ A Hubot script that manages TODOs.
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdate.jpg "set date")
 
 #### date (task-number) today+n , task_number = last added task, if task_number is not provided
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetodayfortask.jpg "set today+n date for task")
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetoday.jpg "set today+n date for task")
 
 #### default date (date in the format DD-MM-YYYY) 
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdate.jpg "set default date")
