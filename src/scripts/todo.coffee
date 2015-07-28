@@ -20,12 +20,9 @@ class Todos
 		@robot.respond /list/i, @listItems
 		@robot.respond /help/i, @help
 		@robot.respond /update ([0-9]+){0,1}(.*)/i, @updateItem
-		@robot.respond /time for ([0-9]+) ([0-9]{2}):([0-9]{2})/i, @setTime
-		@robot.respond /time ([0-9]{2}):([0-9]{2})/i, @setTimeForContext
-		@robot.respond /date for ([0-9]+) (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDate
-		@robot.respond /date (([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDateForContext
-		@robot.respond /date for ([0-9]+) today(\+([0-9]+)){0,1}/i, @setDateWithExpression
-		@robot.respond /date today(\+([0-9]+)){0,1}/i, @setDateWithExpressionForContext
+		@robot.respond /time( [0-9]+){0,1}( ([0-9]{2}):([0-9]{2}))/i, @setTime
+		@robot.respond /date( [0-9]+){0,1}( ([0-9]{2})-([0-9]{2})-([0-9]{4}))/i, @setDate
+		@robot.respond /date( [0-9]+){0,1} today(\+([0-9]+)){0,1}/i, @setDateWithExpression
 		@robot.respond /note ([0-9]+){0,1}(.*)/i, @addNote
 		@robot.respond /subtask (.*) for ([0-9]+)/i, @addSubtask
 		@robot.respond /complete( [0-9]+){0,1}/i, @markTaskAsFinish
@@ -35,24 +32,21 @@ class Todos
 		@robot.respond /show( [0-9]+){0,1}/i, @showTask
 
 	help: (msg) =>
-		message = "\n*add|create <task-description>
+		message = "\n* add|create <task-description>
+   	    \n\n  task_number = last added task, if <task_number> not provided
    	    \n\n* update <task-number> <task-description>
         \n* delete <task number|all>
         \n* show <task number>
         \n* note <task number> <note-description>
         \n* complete <task-number>
-        \n  task_number = last added task, if <task_number> not provided
-        \n\n\n* time <time in the format hh:mm>: For last added task.
-        \n* date <date in the format DD-MM-YYYY>: For last added task.
-        \n* date today+n: For last added task.
+        \n* time <task-number> <time in the format hh:mm>
+        \n* date <task-number> <date in the format DD-MM-YYYY>
+        \n* date <task-number> today+n
         \n* list
         \n* subtask <description> for <parent-task-number>
         \n* default time HH:MM
         \n* default date today+n
-        \n* default date <DD-MM-YYYY>
-        \n* time for <task number> <time in the format hh:mm>: For any particular task.
-        \n* date for <task number> <DD-MM-YYYY>: For any particular task.
-        \n* date for <task number> today+n: For any particular task."
+        \n* default date <DD-MM-YYYY>"
         
         
 
@@ -181,67 +175,22 @@ class Todos
 	setDateWithExpression: (msg) =>
 		
 		user 	   = msg.message.user
-		value = msg.match[2]
+		value = msg.match[3]
 		task_number= msg.match[1]
-
-		if !value
-			value = 0
-
-		items      = @getItems(user)
-		totalItems = items.length
-
-		if task_number > totalItems
-			if totalItems > 0
-				message = "That item doesn't exist."
-			else
-				message = "There's nothing on your list at the moment"
-
-			msg.send message
-
-			return
-		else
-			task = items[task_number-1]
-			oldDate = task.date_str
-			task_date = new Date()
-			task_date.setDate(task_date.getDate()+parseInt(value))
-			year = task_date.getFullYear()
-			month = ""+(task_date.getMonth()+parseInt(1))
-			if month.length < 2
-				month = "0"+month
-			date = task_date.getDate()
-
-			date_str = date+"-"+month+"-"+year
-
-			hour = "23"
-			minute = "59"
-
-			task.date_str = date_str
-			task.task_date = task_date
-			task.time = hour+":"+minute
-
-			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
-
-		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
-		message += "\n\n"
-		message += @createListMessage(user)
-		msg.send message
-
-	setDateWithExpressionForContext: (msg) =>
-		user 	   = msg.message.user
-		value = msg.match[1]
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
 
-		if @robot.brain.data.todos[task_in_context]?
-			task_number = @robot.brain.data.todos[task_in_context][0]
-			if !task_number
-					message = "No task is present in the context."
+		if !task_number
+			if @robot.brain.data.todos[task_in_context]?
+				task_number = @robot.brain.data.todos[task_in_context][0]
+				if !task_number
+					message = "No task is present in the context.\nPlease specify the task number to set date."
 					msg.send message
 					return
-		else
-			message = "No task is present in the context."
-			msg.send message
-			return
+			else
+				message = "No task is present in the context.\nPlease specify the task number to set date."
+				msg.send message
+				return
 
 		if !value
 			value = 0
@@ -262,7 +211,6 @@ class Todos
 			task = items[task_number-1]
 			oldDate = task.date_str
 			task_date = new Date()
-			task_date = new Date(task_date.getFullYear(),task_date.getMonth(),task_date.getDate())
 			task_date.setDate(task_date.getDate()+parseInt(value))
 			year = task_date.getFullYear()
 			month = ""+(task_date.getMonth()+parseInt(1))
@@ -448,6 +396,22 @@ class Todos
 		month = msg.match[4]
 		year = msg.match[5]
 		task_number = msg.match[1]
+		user_id = user.id
+		task_in_context = user_id+"_"+"task_in_context"
+
+
+		if !task_number
+			if @robot.brain.data.todos[task_in_context]?
+				task_number = @robot.brain.data.todos[task_in_context][0]
+				if !task_number
+					message = "No task is present in the context.\nPlease specify the task number to set date."
+					msg.send message
+					return
+			else
+				message = "No task is present in the context.\nPlease specify the task number to set date."
+				msg.send message
+				return
+
 		
 		isValidDate = @isValidDate(date,month,year)
 		if isValidDate != 1
@@ -482,59 +446,6 @@ class Todos
 		message += @createListMessage(user)
 		msg.send message
 
-	setDateForContext: (msg) =>
-		user 	   = msg.message.user
-		date= msg.match[2]
-		month = msg.match[3]
-		year = msg.match[4]
-		user_id = user.id
-		task_in_context = user_id+"_"+"task_in_context"
-
-		if @robot.brain.data.todos[task_in_context]?
-			task_number = @robot.brain.data.todos[task_in_context][0]
-			if !task_number
-				message = "No task is present in the context."
-				msg.send message
-				return
-		else
-			message = "No task is present in the context."
-			msg.send message
-			return
-
-		isValidDate = @isValidDate(date,month,year)
-		if isValidDate != 1
-			msg.send "Opps! It seems date format is not correct.\n Date Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
-			return
-
-		items      = @getItems(user)
-		totalItems = items.length
-
-		if task_number > totalItems
-			if totalItems > 0
-				message = "Task number #{task_number} doesn't exist."
-			else
-				message = "There's nothing on your list at the moment"
-
-			msg.send message
-
-			return
-		else
-			task = items[task_number-1]
-			oldDate = task.date_str
-			task_date = new Date(year,month-1,date)
-
-			date_str = date+"-"+month+"-"+year
-			task.date_str = date_str
-			task.task_date = task_date
-
-			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
-
-		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
-		message += "\n\n"
-		message += @createListMessage(user)
-		msg.send message
-
-
 	isValidDate: (date,month,year) =>
 		if date? and month? and year?
 		 date_str = date+"-"+month+"-"+year
@@ -559,57 +470,24 @@ class Todos
 
 	setTime: (msg) =>
 		user 	   = msg.message.user
-		task_hour= msg.match[2]
-		task_minute = msg.match[3]
+		task_hour= msg.match[3]
+		task_minute = msg.match[4]
 		task_number = msg.match[1]
-		isValidTime = @isValidTime(task_hour,task_minute)
-		if isValidTime != 1
-			msg.send "Opps! It seems time format is not correct.\n Time Format : HH:MM\n00 <= HH <= 23\n00<= MM <=59"
-			return
-
-		items      = @getItems(user)
-		totalItems = items.length
-
-		
-
-
-		if task_number > totalItems
-			if totalItems > 0
-				message = "That item doesn't exist."
-			else
-				message = "There's nothing on your list at the moment"
-
-			msg.send message
-
-			return
-		else
-			task = items[task_number-1]
-			oldTime = task.time
-			task.time = task_hour+":"+task_minute
-			@robot.brain.data.todos[user.id].splice(task_number - 1, 1,task)
-
-		message = "Task Number: #{task_number}\n\n Old time: #{oldTime}\n New Time: #{task.time}\n Description: #{task.description}"
-		message += "\n\n"
-		message += @createListMessage(user)
-		msg.send message
-
-	setTimeForContext: (msg) =>
-		user 	  = msg.message.user
-		task_hour = msg.match[1]
-		task_minute = msg.match[2]
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
 
-		if @robot.brain.data.todos[task_in_context]?
-			task_number = @robot.brain.data.todos[task_in_context][0]
-			if !task_number
-					message = "No task is present in the context."
+
+		if !task_number
+			if @robot.brain.data.todos[task_in_context]?
+				task_number = @robot.brain.data.todos[task_in_context][0]
+				if !task_number
+					message = "No task is present in the context.\nPlease specify the task number to set time."
 					msg.send message
 					return
-		else
-			message = "No task is present in the context."
-			msg.send message
-			return
+			else
+				message = "No task is present in the context.\nPlease specify the task number to set time."
+				msg.send message
+				return
 
 		isValidTime = @isValidTime(task_hour,task_minute)
 		if isValidTime != 1

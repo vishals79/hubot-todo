@@ -57,30 +57,18 @@ A Hubot script that manages TODOs.
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-update.jpg "update")
 
 ### 4. time
-#### time for (task number) (time in the format hh:mm) 
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-settimefortask.jpg "set time for task")
-
-#### time (time in the format hh:mm)
-	This will update time of the last added task.
+#### time (task-number) (time in the format hh:mm), task_number = last added task, if task_number is not provided
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-settime.jpg "set time")
 
 #### default time (time in the format hh:mm)
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaulttime.jpg "set default time")
 
 ### 5. date 
-#### date for (task number) (date in the format DD-MM-YYYY) 
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatefortask.jpg "set date for task")
-
-#### date (date in the format DD-MM-YYYY) 
-	This will update date of the last added task.
+#### date (task-number) (date in the format DD-MM-YYYY), task_number = last added task, if task_number is not provided
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdate.jpg "set date")
 
-#### date for (task number) today+n
+#### date (task-number) today+n , task_number = last added task, if task_number is not provided
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetodayfortask.jpg "set today+n date for task")
-
-#### date today+n
-	This will update date of the last added task.
-![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdatetoday.jpg "set date today+n")
 
 #### default date (date in the format DD-MM-YYYY) 
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-setdefaultdate.jpg "set default date")
@@ -121,16 +109,16 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
     - Current
       - add|create (task-description)
         - A task will be added with task description, default date and time.
-      - update (task-number) (task-description) ,where task-number is optional
+      - update (task-number) (task-description) @hh:mm,where task-number and time(hh:mm) are optional
         - It will update the description of the mentioned task-number. If task number is not specified, last added task present in the context 		  gets modified.   
-      - delete (task number|all) ,where task-number is optional
+      - delete (task number|all)
         - If task number is not specified, last added task present in the context gets removed. 
-      - time (time in the format hh:mm)
-        - Modify time of the last added task.
-      - date (date in the format DD-MM-YYYY)
-        - Modify date of the last added task.
-      - date today+n
-        - Modify date of the last added task to current day + n number of days.
+      - time (task-number) (time in the format hh:mm)
+        -If task number is not specified, last added task present in the context gets modified.
+      - date (task-number) (date in the format DD-MM-YYYY)
+        - If task number is not specified, last added task present in the context gets removed. 
+      - date (task-number) today+n
+        - Modify date of task-number to current day + n number of days. If task number is not specified, last added task present in the 	  context gets modified. 
       - subtask (description) for (parent-task-number)
         - Add sub task for parent-task-number.
       - list
@@ -139,21 +127,17 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         -  Set HH:MM as default time.
       - default date today+n
         -  Set default date to current date+n
-      - show (task number) ,where task-number is optional
-        - Show details of the task.
-      - note (task number) (note-description) ,where task-number is optional
-        - Add note for (task number)
-      - complete (task-number) ,where task-number is optional
-        - Mark the specified task as complete. In case, task number is not specified, last added task will be marked complete.
+      - show (task number)
+        - Show details of the task. task_number = last added task, if task_number is not provided
+      - note (task number) (note-description)
+        - Add note for (task number). task_number = last added task, if task_number is not provided
+      - complete (task-number)
+        - Mark the specified task as complete. task_number = last added task, if task_number is not provided
       - default date (DD-MM-YYYY)
         - Set default date to (DD-MM-YYYY) 
-      - update (task-number) with (task-description) @hh:mm 
-        - update the task's description. Time is optional(format @hh:mm)
-      - Note: For modifying Time/Date for any particular task, specify (task-number) e.g. time for (task number) (time in the format hh:mm)
-
     - To be added
       - Modified command sets with new syntax - This will make commands easy to remember. (Present in the latest script)
       - Change in response given by hubot after execution of each commands. (Present in the latest script)
-      - Tree structure - Addition of subtask with parent child relationships (Release on 27th July)
-      - Undo - To undo the last action (Release on 28th July)
+      - Tree structure - Addition of subtask with parent child relationships (Release on 28th July)
+      - Undo - To undo the last action (Release on 29th July)
   - Examples
