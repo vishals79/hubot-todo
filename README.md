@@ -35,6 +35,7 @@ A Hubot script that manages TODOs.
        	  npm install hubot-todo --save
 
 ### Add hubot todo to external-scripts.json 
+    Replace generated external-scripts.json content with
        [
 	  "hubot-todo"
        ] 
