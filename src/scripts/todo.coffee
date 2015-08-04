@@ -134,7 +134,7 @@ class Todos
 			return
 
 		task_date = new Date(year,month-1,date)
-		date_str = date+"-"+month+"-"+year
+		date_str = @getDate(date,month,year)
 
 		@robot.brain.data.todos[default_date_key] = []
 		@robot.brain.data.todos[default_date_key].push(date_str)
@@ -155,15 +155,12 @@ class Todos
 		task_date = new Date()
 		task_date.setDate(task_date.getDate()+parseInt(value))
 		year = task_date.getFullYear()
-		month = ""+task_date.getMonth()
-		if month.length < 2
-			month = "0"+month
 		date = task_date.getDate()
 
 		display_month = ""+(task_date.getMonth()+parseInt(1))
 		if display_month.length < 2
 			display_month = "0"+display_month
-		date_str = date+"-"+display_month+"-"+year
+		date_str = @getDate(date,display_month,year)
 
 		@robot.brain.data.todos[default_date_key] = []
 		@robot.brain.data.todos[default_date_key].push(date_str)
@@ -171,6 +168,45 @@ class Todos
 
 		message = "Default date set to #{date_str}"
 		msg.send message
+
+	getDate: (date,month,year) =>
+		if date? and month? and year?
+			date = date.toString()
+			month = month.toString()
+
+			if month == "01"
+				month_str = "Jan"
+			else if month == "02"
+				month_str = "Feb"
+			else if month == "03"
+				month_str = "Mar"
+			else if month == "04"
+				month_str = "Apr"
+			else if month == "05"
+				month_str = "May"
+			else if month == "06"
+				month_str = "Jun"
+			else if month == "07"
+				month_str = "Jul"
+			else if month == "08"
+				month_str = "Aug"
+			else if month == "09"
+				month_str = "Sep"
+			else if month == "10"
+				month_str = "Oct"
+			else if month == "11"
+				month_str = "Nov"
+			else if month == "12"
+				month_str = "Dec"
+			else
+				month_str = ""
+
+			if date.length < 2
+				date = "0"+date
+			date_str = date+" "+month_str+" "+year
+			return date_str
+
+		return date_str
 
 	setDateWithExpression: (msg) =>
 		
@@ -533,17 +569,13 @@ class Todos
 			task_date = @robot.brain.data.todos[user.id+"_"+"default_date_key"][1]
 		else
 			task_date = new Date()
-			month = ""+task_date.getMonth()
-			if month.length < 2
-				month = "0"+month
-			task_date = new Date(task_date.getFullYear(),month,task_date.getDate())
 			year = task_date.getFullYear()
 			month = task_date.getMonth()
 			date = task_date.getDate()
 			display_month = ""+(task_date.getMonth()+parseInt(1))
 			if display_month.length < 2
 				display_month = "0"+display_month
-			date_str = date+"-"+display_month+"-"+year
+			date_str = @getDate(date,display_month,year)
 
 		if @robot.brain.data.todos[user.id+"_"+"default_time_key"]?
 			time_str = @robot.brain.data.todos[user.id+"_"+"default_time_key"][0]
@@ -735,15 +767,15 @@ class Todos
 
 			if overdue.length > 1
 				message += overdue.join("\n")
-				message += "\n-------------------------------------------------------------------------------------------------------------\n"
+				message += "\n------------------------------------------------------------------------------------------------------------\n"
 			if today.length > 1
 				message += today.join("\n")
 				message += 
-				"\n-------------------------------------------------------------------------------------------------------------\n"
+				"\n------------------------------------------------------------------------------------------------------------\n"
 			if tomorrow.length > 1
 				message += tomorrow.join("\n")
 				message += 
-				"\n-------------------------------------------------------------------------------------------------------------\n"
+				"\n------------------------------------------------------------------------------------------------------------\n"
 			if someOtherDay.length > 1
 				message += someOtherDay.join("\n")
 		else
@@ -802,7 +834,7 @@ class Todos
 
 				while desc_start_index < desc_length or node_start_index < note_length
 					task_string.push("\n")
-					task_string.push("                                                                                ")
+					task_string.push("                                                                             ")
 					if desc_start_index < desc_length
 						if (desc_length - desc_start_index) < 25
 							desc_str = msg["description"].substring(desc_start_index,desc_length)
