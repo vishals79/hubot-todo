@@ -33,15 +33,15 @@ class Todos
 
 	help: (msg) =>
 		message = "\n* add|create <task-description>
-   	    \n\n  task_number = last added task, if <task_number> not provided
-   	    \n\n* update <task-number> <task-description>
-        \n* delete <task number|all>
-        \n* show <task number>
-        \n* note <task number> <note-description>
-        \n* complete <task-number>
-        \n* time <task-number> <time in the format hh:mm>
-        \n* date <task-number> <date in the format DD-MM-YYYY>
-        \n* date <task-number> today+n
+   	    \n\n  task_number = last added task, if <task_number> is not provided
+   	    \n\n* update <task_number> <task-description>
+        \n* delete <task_number|all>
+        \n* show <task_number>
+        \n* note <task_number> <note-description>
+        \n* complete <task_number>
+        \n* time <task_number> <time in the format hh:mm>
+        \n* date <task_number> <date in the format DD-MM-YYYY>
+        \n* date <task_number> today+n
         \n* list
         \n* subtask <description> for <parent-task-number>
         \n* default time HH:MM
