@@ -254,7 +254,7 @@ class Todos
 				month = "0"+month
 			date = task_date.getDate()
 
-			date_str = date+"-"+month+"-"+year
+			date_str = @getDate(date,month,year)
 
 			hour = "23"
 			minute = "59"
@@ -471,7 +471,7 @@ class Todos
 			oldDate = task.date_str
 			task_date = new Date(year,month-1,date)
 
-			date_str = date+"-"+month+"-"+year
+			date_str = @getDate(date,month,year)
 			task.date_str = date_str
 			task.task_date = task_date
 
