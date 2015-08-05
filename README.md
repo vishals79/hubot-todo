@@ -34,10 +34,10 @@ A Hubot script that manages TODOs.
 ### Add hubot todo as dependency 
        	  npm install hubot-todo --save
 
-### Add hubot todo to external-scripts.json 
+### Add redis to external-scripts.json 
     Replace generated external-scripts.json content with
        [
-	  "hubot-todo"
+	  "hubot-redis-brain"
        ] 
 
 ## How to run
@@ -139,6 +139,4 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
     - To be added
       - Modified command sets with new syntax - This will make commands easy to remember. (Present in the latest script)
       - Change in response given by hubot after execution of each commands. (Present in the latest script)
-      - Tree structure - Addition of subtask with parent child relationships (Release on 28th July)
-      - Undo - To undo the last action (Release on 29th July)
   - Examples
