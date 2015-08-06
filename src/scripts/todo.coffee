@@ -171,42 +171,23 @@ class Todos
 
 	getDate: (date,month,year) =>
 		if date? and month? and year?
+			month_list = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 			date = date.toString()
-			month = month.toString()
+			month = Number(month)
+			if month
+				if month >= 0 and month <= month_list.length
+					month_str = month_list[month-1]
+				else
+					return ""
 
-			if month == "01"
-				month_str = "Jan"
-			else if month == "02"
-				month_str = "Feb"
-			else if month == "03"
-				month_str = "Mar"
-			else if month == "04"
-				month_str = "Apr"
-			else if month == "05"
-				month_str = "May"
-			else if month == "06"
-				month_str = "Jun"
-			else if month == "07"
-				month_str = "Jul"
-			else if month == "08"
-				month_str = "Aug"
-			else if month == "09"
-				month_str = "Sep"
-			else if month == "10"
-				month_str = "Oct"
-			else if month == "11"
-				month_str = "Nov"
-			else if month == "12"
-				month_str = "Dec"
+				if date.length < 2
+					date = "0"+date
+				date_str = date+" "+month_str+" "+year
+				return date_str
 			else
-				month_str = ""
+				""
 
-			if date.length < 2
-				date = "0"+date
-			date_str = date+" "+month_str+" "+year
-			return date_str
-
-		return date_str
+		return ""
 
 	setDateWithExpression: (msg) =>
 		
