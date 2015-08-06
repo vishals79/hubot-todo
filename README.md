@@ -137,6 +137,5 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
       - default date (DD-MM-YYYY)
         - Set default date to (DD-MM-YYYY) 
     - To be added
-      - Modified command sets with new syntax - This will make commands easy to remember. (Present in the latest script)
-      - Change in response given by hubot after execution of each commands. (Present in the latest script)
+      - Assign task option - This will allow user to assign tasks to another users.
   - Examples
