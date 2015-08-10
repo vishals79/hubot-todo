@@ -30,6 +30,11 @@ class Todos
 		@robot.respond /default date today(\+([0-9]+)){0,1}/i, @setDefaultDateExpression
 		@robot.respond /default time ([0-9]{2}):([0-9]{2})/i, @setDefaultTime
 		@robot.respond /show( [0-9]+){0,1}/i, @showTask
+		@robot.respond /assign( [0-9]+){0,1} @([a-zA-Z0-9]+){1}/i, @assignTask
+		@robot.respond /notifications/i, @notifications
+		@robot.respond /accept( [0-9]+){0,1}/i, @acceptNotification
+		@robot.respond /reject( [0-9]+){0,1}/i, @rejectNotification
+		@robot.respond /clear/i, @clearNotification
 
 	help: (msg) =>
 		message = "\n* add|create <task-description>
@@ -46,11 +51,216 @@ class Todos
         \n* subtask <description> for <parent-task-number>
         \n* default time HH:MM
         \n* default date today+n
-        \n* default date <DD-MM-YYYY>"
+        \n* default date <DD-MM-YYYY>
+        \n* assign <task_number> @User_Id : Assign task to User_Id
+        \n* notifications : Display Notifications
+        \n* accept <task_number> : Add task to your list and delete the notification.
+        \n* reject <task_number> : Assign task back to the assignor and delete the notification.
+        \n* clear: Clear all notifications"
         
         
 
 		msg.send message
+
+	acceptNotification: (msg) =>
+		user 	   = msg.message.user
+		number = msg.match[1]
+
+		notifications = @getNotification(user)
+		totalItems = notifications.length
+
+		if !number
+			if totalItems > 0
+				number = totalItems
+			else
+				message = "Notification is not present in the context."
+				msg.send message
+				return
+		if number > totalItems
+			if totalItems > 0
+				message = "Notification doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+			return
+		else 
+			notification = notifications[number-1]
+			task = notification.task
+			if task?
+				ret = @addItemToArray(user.id,task)
+				if ret != 0
+					@deleteNotification(user,number)
+					message = "Task added to your list.\n\n Description: #{task.description}\n Deadline: #{task.date_str} #{task.time}\n\n"
+					message += @createNotificationMessage(user)
+
+					msg.send message
+				else
+					message = "Error occurred while task addition."
+					msg.send message
+			else
+				msg.send "Undefined task."
+
+	rejectNotification: (msg) =>
+		user 	   = msg.message.user
+		number = msg.match[1]
+
+		notifications = @getNotification(user)
+		totalItems = notifications.length
+
+		if !number
+			if totalItems > 0
+				number = totalItems
+			else
+				message = "Notification is not present in the context."
+				msg.send message
+				return
+		if number > totalItems
+			if totalItems > 0
+				message = "Notification doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+			return
+		else 
+			notification = notifications[number-1]
+			task = notification.task
+			assignor_id = notification.assignor_id
+			assignor_name = notification.assignor_name
+			if assignor_id? and assignor_id == user.id
+				@deleteNotification(user,number)
+				message = "You were the assignor of this task. Notification deleted from the list.\n\n"
+				message += @createNotificationMessage(user)
+				msg.send message
+				return
+			if task?
+				notification.desc = "Task rejected by #{user.name}"
+				console.log(assignor_id)
+				ret = @assignNotification(assignor_id,notification)
+				if ret != 0
+					@deleteNotification(user,number)
+					message = "Task assigned back to #{assignor_name}.\n\n Description: #{task.description}\n Deadline: #{task.date_str} #{task.time}\n\n"
+					message += @createNotificationMessage(user)
+
+					msg.send message
+				else
+					message = "Error occurred while performing the operation."
+					msg.send message
+			else
+				msg.send "Undefined task."
+
+	clearNotification: (msg) =>
+		user 	= msg.message.user
+		user_id_notifications = user.id+"_"+"notifications"
+		@robot.brain.data.todos[user_id_notifications] = []
+
+		message = "Notifications cleared"
+		msg.send message
+		return
+
+	deleteNotification: (user,number) =>
+		if user? and number?
+			user_id_notifications = user.id+"_"+"notifications"
+			notifications = @getNotification(user)
+			if number <= notifications.length
+				@robot.brain.data.todos[user_id_notifications].splice(number - 1, 1)
+				return 1
+			else
+				return -1
+		else
+			return -1
+
+	notifications: (msg) =>
+		user 	= msg.message.user
+		message = @createNotificationMessage(user)
+
+		msg.send message
+
+	test: (msg) =>
+		user 	= msg.message.user
+		message = @createListMessageTest(user)
+
+		msg.send message
+
+	assignTask: (msg) =>
+		user 	   = msg.message.user
+		user_id = user.id
+		assignor_name = user.name
+		task_number = msg.match[1]
+		assignee_name = msg.match[2]
+		task_in_context = user_id+"_"+"task_in_context"
+
+		
+		assignee_id_rawText = msg.message.rawText
+		console.log(assignee_id_rawText)
+		start_index = assignee_id_rawText.indexOf("@")
+		console.log(start_index)
+		if start_index != -1
+			start_index  += 1
+			end_index = assignee_id_rawText.indexOf(">")
+			console.log(end_index)
+			if end_index != -1
+				assignee_id = assignee_id_rawText.substring(start_index,end_index)
+			else
+				message = "Error occurred while fetching assignee id."
+				msg.send message
+				return 
+		else
+			message = "Error occurred while fetching assignee id."
+			msg.send message
+			return 
+		console.log(assignee_id)
+
+		items      = @getItems(user.id)
+		totalItems = items.length
+
+		if !task_number
+			if @robot.brain.data.todos[task_in_context]?
+				task_number = @robot.brain.data.todos[task_in_context][0]
+				if !task_number
+					message = "No task is present in the context."
+					msg.send message
+					return
+			else
+				message = "No task is present in the context."
+				msg.send message
+				return
+
+
+		if task_number > totalItems
+			if totalItems > 0
+				message = "That item doesn't exist."
+			else
+				message = "There's nothing on your list at the moment"
+
+			msg.send message
+
+			return
+		else
+			if assignee_id?
+				task = items[task_number-1]
+				notification = {}
+				notification.task = task
+				notification.assignor_name = assignor_name
+				notification.assignor_id = user_id
+				notification.desc = "Task assigned by #{assignor_name}"
+				@assignNotification(assignee_id,notification)
+				@robot.brain.data.todos[user.id].splice(task_number - 1, 1)
+				@robot.brain.data.todos[task_in_context][0] = totalItems-1
+
+		message = "Task assigned to #{assignee_name}"
+
+		msg.send message
+
+	assignNotification: (user_id,notification) =>
+		if user_id? and notification?
+			assignee_id_notifications = user_id+"_"+"notifications"
+			@robot.brain.data.todos[assignee_id_notifications] ?= []
+			@robot.brain.data.todos[assignee_id_notifications].push(notification)
+			return 1
+		else
+			return 0
 
 	showTask: (msg) =>
 		user 	   = msg.message.user
@@ -58,18 +268,18 @@ class Todos
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		if !task_number
 			if @robot.brain.data.todos[task_in_context]?
 				task_number = @robot.brain.data.todos[task_in_context][0]
 				if !task_number
-					message = "No task is present in the context.\nPlease specify the task number to be marked as complete."
+					message = "No task is present in the context."
 					msg.send message
 					return
 			else
-				message = "No task is present in the context.\nPlease specify the task number to be marked as complete."
+				message = "No task is present in the context."
 				msg.send message
 				return
 
@@ -212,7 +422,7 @@ class Todos
 		if !value
 			value = 0
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		if task_number > totalItems
@@ -255,7 +465,7 @@ class Todos
 		user 	   = msg.message.user
 		task_number = msg.match[1]
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
@@ -296,7 +506,7 @@ class Todos
 		description = msg.match[1]
 		task_parent_number = msg.match[2]
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		if task_parent_number > totalItems
@@ -326,7 +536,7 @@ class Todos
 		task_child_number= msg.match[1]
 		task_parent_number = msg.match[2]
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		if task_child_number > totalItems
@@ -368,7 +578,7 @@ class Todos
 		note       = msg.match[2]
 		task_number = msg.match[1]
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		user_id = user.id
@@ -435,7 +645,7 @@ class Todos
 			msg.send "Opps! It seems date format is not correct.\n Date Format : DD-MM-YYYY\n01 <= DD <= 31\n01<=MM<=11\n2015<=YYYY<=2099"
 			return
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		if task_number > totalItems
@@ -511,7 +721,7 @@ class Todos
 			msg.send "Opps! It seems time format is not correct.\n Time Format : HH:MM\n00 <= HH <= 23\n00<= MM <=59"
 			return
 
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 
 		
@@ -543,7 +753,7 @@ class Todos
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
 
-		tasks = {description:task_desc}
+		task = {description:task_desc}
 
 		if @robot.brain.data.todos[user.id+"_"+"default_date_key"]?
 			date_str = @robot.brain.data.todos[user.id+"_"+"default_date_key"][0]
@@ -563,32 +773,46 @@ class Todos
 		else
 			time_str = "23:59"
 
-		tasks.date_str = date_str
-		tasks.task_date = task_date
-		tasks.time = time_str
-		tasks.child = ""
-		tasks.parents = []
-		tasks.subtask_list = []
+		task.date_str = date_str
+		task.task_date = task_date
+		task.time = time_str
+		task.child = ""
+		task.parents = []
+		task.subtask_list = []
 
-		@robot.brain.data.todos[user.id] ?= []
-		@robot.brain.data.todos[user.id].push(tasks)
-
+		ret = @addItemToArray(user.id,task)
+		if ret != 0
+			message = "New task added in your list.\n\n Task Number: #{ret}\n\n Deadline\nDate: #{date_str}\n Time: #{time_str}\n\n Description: #{task_desc}"
+			message += "\n\n"
+			message += @createListMessage(user)
+		else
+			message = "Error occurred while task addition."
 		
-		totalItems = @getItems(user).length
-
-		@robot.brain.data.todos[task_in_context] = []
-		@robot.brain.data.todos[task_in_context].push(totalItems)
-
-		message = "New task added in your list.\n\n Task Number: #{totalItems}\n\n Deadline\nDate: #{date_str}\n Time: #{time_str}\n\n Description: #{task_desc}"
-		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+
+	addItemToArray: (user_id,task) =>
+		if user_id?
+			task_in_context = user_id+"_"+"task_in_context"
+
+			@robot.brain.data.todos[user_id] ?= []
+			@robot.brain.data.todos[user_id].push(task)
+
+			
+			totalItems = @getItems(user_id).length
+
+
+			@robot.brain.data.todos[task_in_context] = []
+			@robot.brain.data.todos[task_in_context].push(totalItems)
+
+			return totalItems
+		else
+			return 0
 
 	removeItem: (msg) =>
 		user 	  = msg.message.user
 		user_id   = user.id
 		item       = msg.match[1]
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 		task_in_context = user_id+"_"+"task_in_context"
 
@@ -643,7 +867,7 @@ class Todos
 		user      = msg.message.user
 		item      = msg.match[1]
 		desc      = msg.match[2]
-		items      = @getItems(user)
+		items      = @getItems(user.id)
 		totalItems = items.length
 		user_id = user.id
 		task_in_context = user_id+"_"+"task_in_context"
@@ -699,8 +923,34 @@ class Todos
 
 	clearAllItems: (user) => @robot.brain.data.todos[user.id].length = 0
 
+	getNotification: (user) => 
+		if user?
+			user_id = user.id
+			user_id_notifications = user_id+"_"+"notifications"
+			return @robot.brain.data.todos[user_id_notifications] or []
+
+	createNotificationMessage: (user) =>
+		notifications = @getNotification(user)
+		message = "                                                                          Notifications              \n\n"
+		message += " S.No                             Deadline.                                  Assigned By.                              \n\n"
+		values = []
+		if notifications? and notifications.length > 0
+			for item,index in notifications
+				values = []
+				task = item["task"]
+				if task?
+					values.push("\n\n"+(index+1)+".   ")
+					values.push(task["date_str"]+" "+task["time"])
+					values.push(item["desc"])
+					message += "\n"+values.join("                     ")
+					message += "\nDescription: "+task["description"]
+			return message
+		else
+			return "You don't have any notification"
+
+
 	createListMessage: (user) =>
-		items = @getItems(user)
+		items = @getItems(user.id)
 
 		message = ""
 		overdue = ["\n   Overdue\n"]
@@ -719,6 +969,8 @@ class Todos
 			for todo, index in items
 				values = []
 				values.push(index + 1)
+
+
 				values.push(todo["description"])
 				values.push(todo["date_str"])
 				values.push(todo["time"])
@@ -848,11 +1100,11 @@ class Todos
 
 			return task_string
 
-	getItems: (user) => return @robot.brain.data.todos[user.id] or []
+	getItems: (user_id) => return @robot.brain.data.todos[user_id] or []
 
 	listItems: (msg) =>
 		user   	= msg.message.user
-		totalItems = @getItems(user).length
+		totalItems = @getItems(user.id).length
 		multiple   = totalItems isnt 1
 
 		message = ""
