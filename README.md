@@ -97,7 +97,27 @@ A Hubot script that manages TODOs.
       	show (task number), task_number = last added task, if task_number is not provided
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-show.jpg "todo show")
 
-### 10. help
+### 11.assign
+      	assign (task number) @User_Id, task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-assign.jpg "todo assign")
+
+### 12.notifications
+      	notifications
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-notifications.jpg "todo notifications")
+
+### 13.accept
+      	accept (task number), task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-accept.jpg "todo accept")
+
+### 14.reject
+      	reject (task number), task_number = last added task, if task_number is not provided
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-reject.jpg "todo reject")
+
+### 15.clear
+      	clear
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-clear.jpg "todo clear")
+
+### 16. help
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-help.jpg "todo help")
 
 ## Configuration
@@ -136,6 +156,15 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - Mark the specified task as complete. task_number = last added task, if task_number is not provided
       - default date (DD-MM-YYYY)
         - Set default date to (DD-MM-YYYY) 
-    - To be added
-      - Assign task option - This will allow user to assign tasks to another users.
+      - assign (task-number) @User_Id
+        - assign task-number to user with id = User_Id
+      - notifications
+        - Display user's notifications.
+      - accept (task-number)
+        - Add task corresponding to task-number to user's list and delete the notification.
+      - reject (task-number)
+        - Reject task to send it back to the assignor and delete the notification.
+      - clear
+        - Clear all notifications.
+    - To be aded
   - Examples

@@ -62,6 +62,11 @@ class Todos
 
 		msg.send message
 
+	hi: (msg) =>
+		msg.title = "Title"
+		msg.send payload={"text": "<https://slack.com>"}
+
+
 	acceptNotification: (msg) =>
 		user 	   = msg.message.user
 		number = msg.match[1]
@@ -174,12 +179,6 @@ class Todos
 	notifications: (msg) =>
 		user 	= msg.message.user
 		message = @createNotificationMessage(user)
-
-		msg.send message
-
-	test: (msg) =>
-		user 	= msg.message.user
-		message = @createListMessageTest(user)
 
 		msg.send message
 
@@ -951,12 +950,15 @@ class Todos
 
 	createListMessage: (user) =>
 		items = @getItems(user.id)
+		notifications = @getNotification(user)
+		no_of_notifications = notifications.length
 
 		message = ""
-		overdue = ["\n   Overdue\n"]
-		today = ["\n   Today\n"]
-		tomorrow = ["\n   Tomorrow\n"]
-		someOtherDay = ["\n   Rest\n"]
+		header = " S.No                                      Deadline.                                          Status                             \n"
+		overdue = ["\nOverdue\n"+header]
+		today = ["\nToday\n"+header]
+		tomorrow = ["\nTomorrow\n"+header]
+		someOtherDay = ["\nOther\n"+header]
 
 		current_date = new Date()
 		current_date = new Date(current_date.getFullYear(),current_date.getMonth(),current_date.getDate())
@@ -965,7 +967,10 @@ class Todos
 		next_date = new Date(next_date.getFullYear(),next_date.getMonth(),next_date.getDate()+1)
 
 		if items.length > 0
-			message += "                                                                           To Do List              "
+			message += "                                                                           To Do List              \n\n"
+			if no_of_notifications > 0
+				multiple  = no_of_notifications isnt 1
+				message += "   >>> You have #{no_of_notifications} notification"+ (if multiple then 's' else '') + "\n\n"
 			for todo, index in items
 				values = []
 				values.push(index + 1)
@@ -987,16 +992,16 @@ class Todos
 
 					date = new Date(todo["task_date"])
 					if date < current_date
-						overdue.push(values.join("     "))
+						overdue.push(values.join("                                   "))
 
 					else if date.getMonth() == current_date.getMonth() and date.getDate() == current_date.getDate() and date.getFullYear() == current_date.getFullYear()
-						today.push(values.join("     "))
+						today.push(values.join("                                   "))
 
 					else if date.getMonth() == next_date.getMonth() and date.getDate() == next_date.getDate() and date.getFullYear() == next_date.getFullYear()
-						tomorrow.push(values.join("     "))
+						tomorrow.push(values.join("                                   "))
 
 					else
-						someOtherDay.push(values.join("     "))
+						someOtherDay.push(values.join("                                   "))
 
 			if overdue.length > 1
 				message += overdue.join("\n")
@@ -1017,6 +1022,27 @@ class Todos
 		return message
 
 	getTaskString: (msg,index) =>
+		if msg?
+			task_string = []
+			desc_length = 0
+			note_length = 0
+			empty_date = " "
+			empty_status = "P  "
+			empty_desc = " "
+			empty_note = " "
+			if msg["description"]?
+				desc_length = msg["description"].length
+			if desc_length > 0
+				task_string.push("   "+index+".  ")
+				task_string.push(msg["date_str"]+" "+msg["time"])
+				if msg["status"]?
+					task_string.push(msg["status"])
+				else
+					task_string.push(empty_status)
+				task_string.push("\nDescription:\n"+msg["description"]+"\n")
+			return task_string
+
+	getTaskStringNotInUse: (msg,index) =>
 		if msg?
 			task_string = []
 			desc_length = 0
