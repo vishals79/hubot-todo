@@ -37,9 +37,9 @@ class Todos
 		@robot.respond /clear/i, @clearNotification
 
 	help: (msg) =>
-		message = "\n* add|create <task-description>
+		message = "\n* add|create <task-description> @hh:mm (optional)
    	    \n\n  task_number = last added task, if <task_number> is not provided
-   	    \n\n* update <task_number> <task-description>
+   	    \n\n* update <task_number> <task-description> @hh:mm (optional)
         \n* delete <task_number|all>
         \n* show <task_number>
         \n* note <task_number> <note-description>
@@ -61,10 +61,6 @@ class Todos
         
 
 		msg.send message
-
-	hi: (msg) =>
-		msg.title = "Title"
-		msg.send payload={"text": "<https://slack.com>"}
 
 
 	acceptNotification: (msg) =>
@@ -141,7 +137,6 @@ class Todos
 				return
 			if task?
 				notification.desc = "Task rejected by #{user.name}"
-				console.log(assignor_id)
 				ret = @assignNotification(assignor_id,notification)
 				if ret != 0
 					@deleteNotification(user,number)
@@ -192,13 +187,10 @@ class Todos
 
 		
 		assignee_id_rawText = msg.message.rawText
-		console.log(assignee_id_rawText)
 		start_index = assignee_id_rawText.indexOf("@")
-		console.log(start_index)
 		if start_index != -1
 			start_index  += 1
 			end_index = assignee_id_rawText.indexOf(">")
-			console.log(end_index)
 			if end_index != -1
 				assignee_id = assignee_id_rawText.substring(start_index,end_index)
 			else
@@ -209,7 +201,6 @@ class Todos
 			message = "Error occurred while fetching assignee id."
 			msg.send message
 			return 
-		console.log(assignee_id)
 
 		items      = @getItems(user.id)
 		totalItems = items.length
@@ -767,10 +758,23 @@ class Todos
 				display_month = "0"+display_month
 			date_str = @getDate(date,display_month,year)
 
-		if @robot.brain.data.todos[user.id+"_"+"default_time_key"]?
-			time_str = @robot.brain.data.todos[user.id+"_"+"default_time_key"][0]
+		doesTimeExist = @doesTimeExist(task_desc)
+		if doesTimeExist > 0
+			hour = task_desc.slice(doesTimeExist+1,doesTimeExist+3)
+			minutes = task_desc.slice(doesTimeExist+4,doesTimeExist+6)
+			isValidTime = @isValidTime(hour,minutes)
+			if isValidTime != 1
+				msg.send "Opps! It seems time format is not correct.\n Time Format : HH:MM\n00 <= HH <= 23\n00<= MM <=59"
+				return
+
+			time_str = hour+":"+minutes
+			task_desc = task_desc.slice(0,doesTimeExist)
+			task.description = task_desc
 		else
-			time_str = "23:59"
+			if @robot.brain.data.todos[user.id+"_"+"default_time_key"]?
+				time_str = @robot.brain.data.todos[user.id+"_"+"default_time_key"][0]
+			else
+				time_str = "23:59"
 
 		task.date_str = date_str
 		task.task_date = task_date

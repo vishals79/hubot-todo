@@ -47,14 +47,14 @@ A Hubot script that manages TODOs.
 
 ## Example
 ### 1. add|create
-	add|create (task-description)
+	add|create (task-description) @hh:mm (optional)
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-add.jpg "add")
 
 ### 2. list
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-list.jpg "list")
 
 ### 3. update
-	update (task-number) (task-description), task_number = last added task, if task_number is not provided
+	update (task-number) (task-description) @hh:mm (optional), task_number = last added task, if task_number is not provided
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-update.jpg "update")
 
 ### 4. time
