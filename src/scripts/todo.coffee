@@ -58,10 +58,66 @@ class Todos
         \n* reject <task_number> : Assign task back to the assignor and delete the notification.
         \n* clear: Clear all notifications"
         
-        
+        	
 
 		msg.send message
 
+	getColHeaderAttachment: (title) =>
+		str = {
+        "fallback": "",
+        "title": "#{title}",
+        "fields":[
+            {
+                "title": "S.No                                           Deadline                                           Status"
+                "value": ""
+                "short": true
+            }
+         ]
+    	}
+		return str
+
+	getNotfHeaderAttachment: (title) =>
+		str = {
+        "fallback": "",
+        "title": "#{title}",
+        "fields":[
+            {
+                "title": "S.No                                           Deadline                                           Comment"
+                "value": ""
+                "short": true
+            }
+         ]
+    	}
+		return str
+
+	getHeaderAttachment: (noOfItems,noOfNotifications) =>
+		str = {
+        "fallback": "",
+        "title": "TODO List\n"
+		"fields":[
+            {
+                "title": ">>>Total Items"
+                "value": "#{noOfItems}"
+                "short": true
+            },
+            {
+                "title": ">>>Notification"
+                "value": "#{noOfNotifications}"
+                "short": true
+                "color": "#FF0000"
+            }
+         ]
+    	}
+
+		return str
+
+	getDataAttachment: (text,colour) =>
+		str = {
+        "text": "#{text}"
+        "color": "#{colour}"
+    	}
+
+		return str
 
 	acceptNotification: (msg) =>
 		user 	   = msg.message.user
@@ -93,9 +149,9 @@ class Todos
 				if ret != 0
 					@deleteNotification(user,number)
 					message = "Task added to your list.\n\n Description: #{task.description}\n Deadline: #{task.date_str} #{task.time}\n\n"
-					message += @createNotificationMessage(user)
 
 					msg.send message
+					@robot.adapter.customMessage @createNotificationMessage(msg)
 				else
 					message = "Error occurred while task addition."
 					msg.send message
@@ -132,8 +188,8 @@ class Todos
 			if assignor_id? and assignor_id == user.id
 				@deleteNotification(user,number)
 				message = "You were the assignor of this task. Notification deleted from the list.\n\n"
-				message += @createNotificationMessage(user)
 				msg.send message
+				@robot.adapter.customMessage @createNotificationMessage(msg)
 				return
 			if task?
 				notification.desc = "Task rejected by #{user.name}"
@@ -141,9 +197,9 @@ class Todos
 				if ret != 0
 					@deleteNotification(user,number)
 					message = "Task assigned back to #{assignor_name}.\n\n Description: #{task.description}\n Deadline: #{task.date_str} #{task.time}\n\n"
-					message += @createNotificationMessage(user)
 
 					msg.send message
+					@robot.adapter.customMessage @createNotificationMessage(msg)
 				else
 					message = "Error occurred while performing the operation."
 					msg.send message
@@ -172,10 +228,7 @@ class Todos
 			return -1
 
 	notifications: (msg) =>
-		user 	= msg.message.user
-		message = @createNotificationMessage(user)
-
-		msg.send message
+		@robot.adapter.customMessage @createNotificationMessage(msg)
 
 	assignTask: (msg) =>
 		user 	   = msg.message.user
@@ -299,8 +352,8 @@ class Todos
 			message = "\nTask Number: #{task_number}\n\nDescription:\n#{desc}\n\nDeadline:\nDate: #{date_str}\nTime: #{time}\n\nStatus:\n#{status}\n\nNote:\n#{note}"
 
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	setDefaultTime: (msg) =>
 		user 	   = msg.message.user
@@ -448,8 +501,8 @@ class Todos
 
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	markTaskAsFinish: (msg) =>
 		user 	   = msg.message.user
@@ -488,8 +541,8 @@ class Todos
 
 		message = "Task status updated.\n\n Task Number: #{task_number}\n Date: #{item.date_str}\n Time: #{item.time}\n Status: Complete\n Description: #{item.description}"
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	addSubtask: (msg) =>
 		user 	   = msg.message.user
@@ -518,8 +571,8 @@ class Todos
 
 		message = "Sub task added."
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	addChild: (msg) =>
 		user 	   = msg.message.user
@@ -604,8 +657,8 @@ class Todos
 
 		message = "Task Number: #{task_number}\n\nNote: #{note}"
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	setDate: (msg) =>
 		user 	   = msg.message.user
@@ -660,8 +713,8 @@ class Todos
 
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	isValidDate: (date,month,year) =>
 		if date? and month? and year?
@@ -734,8 +787,8 @@ class Todos
 
 		message = "Task Number: #{task_number}\n\n Old time: #{oldTime}\n New Time: #{task.time}\n Description: #{task.description}"
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	addItem: (msg) =>
 		user 	   = msg.message.user
@@ -787,11 +840,11 @@ class Todos
 		if ret != 0
 			message = "New task added in your list.\n\n Task Number: #{ret}\n\n Deadline\nDate: #{date_str}\n Time: #{time_str}\n\n Description: #{task_desc}"
 			message += "\n\n"
-			message += @createListMessage(user)
 		else
 			message = "Error occurred while task addition."
 		
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	addItemToArray: (user_id,task) =>
 		if user_id?
@@ -862,9 +915,9 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(item - 1, 1)
 			message = "Task deleted from list.\n\n Task Number: #{item}\n\nDeadline \nDate: #{date}\nTime: #{time}\n\nDescription: #{desc}"
 			message += "\n\n"
-			message += @createListMessage(user)
 
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	updateItem: (msg) =>
 		user      = msg.message.user
@@ -915,8 +968,8 @@ class Todos
 			@robot.brain.data.todos[user.id].splice(item - 1, 1,task)
 
 		message += "\n\n"
-		message += @createListMessage(user)
 		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 	doesTimeExist: (desc) =>
 		if desc?
@@ -932,37 +985,135 @@ class Todos
 			user_id_notifications = user_id+"_"+"notifications"
 			return @robot.brain.data.todos[user_id_notifications] or []
 
-	createNotificationMessage: (user) =>
+	createNotificationMessage: (msg) =>
+		user = msg.message.user
 		notifications = @getNotification(user)
-		message = "                                                                          Notifications              \n\n"
-		message += " S.No                             Deadline.                                  Assigned By.                              \n\n"
+
+		msgData = {
+    	channel: msg.message.room
+  		attachments: []
+    	}
+
 		values = []
 		if notifications? and notifications.length > 0
+			msgData.attachments.push(@getNotfHeaderAttachment("Notifications"))
 			for item,index in notifications
 				values = []
 				task = item["task"]
+				message = ""
 				if task?
 					values.push("\n\n"+(index+1)+".   ")
 					values.push(task["date_str"]+" "+task["time"])
 					values.push(item["desc"])
 					message += "\n"+values.join("                     ")
 					message += "\nDescription: "+task["description"]
-			return message
+					msgData.attachments.push(@getDataAttachment(message,"#36a64f"))
+			return msgData
 		else
-			return "You don't have any notification"
+			msgData.text = "You don't have any notification"
+			return msgData
+
+	createListUsingAttachments: (msg) =>
+		user = msg.message.user
+		items = @getItems(user.id)
+		notifications = @getNotification(user)
+		no_of_notifications = notifications.length
+
+		msgData = {
+    	channel: msg.message.room
+  		attachments: []
+    	}
+
+		overdue = []
+		today = []
+		tomorrow = []
+		someOtherDay = []
+
+		separator = "\n-------------------------------------------------------------------------------------------------------\n"
+		
+
+		current_date = new Date()
+		current_date = new Date(current_date.getFullYear(),current_date.getMonth(),current_date.getDate())
+
+		next_date = new Date()
+		next_date = new Date(next_date.getFullYear(),next_date.getMonth(),next_date.getDate()+1)
+
+		if items.length > 0
+			msgData.attachments.push(@getHeaderAttachment(items.length,no_of_notifications))
+			
+			for todo, index in items
+				values = []
+				values.push(index + 1)
 
 
-	createListMessage: (user) =>
+				values.push(todo["description"])
+				values.push(todo["date_str"])
+				values.push(todo["time"])
+				values.push(todo["note"])
+				values.push(todo["status"])
+
+				values = @getTaskString(todo,index+1)
+
+				if values.length > 0
+					subtasks = todo["subtask_list"]
+
+					for subtask,index in subtasks
+						values.push("\n           "+(index+1)+". "+subtask)
+
+					date = new Date(todo["task_date"])
+					if date < current_date
+						overdue.push(values.join("                                   "))
+
+					else if date.getMonth() == current_date.getMonth() and date.getDate() == current_date.getDate() and date.getFullYear() == current_date.getFullYear()
+						today.push(values.join("                                   "))
+
+					else if date.getMonth() == next_date.getMonth() and date.getDate() == next_date.getDate() and date.getFullYear() == next_date.getFullYear()
+						tomorrow.push(values.join("                                   "))
+
+					else
+						someOtherDay.push(values.join("                                   "))
+
+			if overdue.length > 0
+				overdueMessage = overdue.join("\n")
+				msgData.attachments.push(@getColHeaderAttachment("Overdue"))
+				msgData.attachments.push(@getDataAttachment(overdueMessage,"#FF0000"))
+				msgData.attachments.push(@getDataAttachment(separator,""))
+				
+			if today.length > 0
+				todayMessage = today.join("\n")
+				msgData.attachments.push(@getColHeaderAttachment("Today"))
+				msgData.attachments.push(@getDataAttachment(todayMessage,"#36a64f"))
+				msgData.attachments.push(@getDataAttachment(separator,""))
+			if tomorrow.length > 0
+				tomorrowMessage = tomorrow.join("\n")
+				msgData.attachments.push(@getColHeaderAttachment("Tomorrow"))
+				msgData.attachments.push(@getDataAttachment(tomorrowMessage,"#0000FF"))
+				msgData.attachments.push(@getDataAttachment(separator,""))
+			if someOtherDay.length > 0
+				someOtherDayMessage = someOtherDay.join("\n")
+				msgData.attachments.push(@getColHeaderAttachment("Other"))
+				msgData.attachments.push(@getDataAttachment(someOtherDayMessage,"#ADD8E6"))
+				msgData.attachments.push(@getDataAttachment(separator,""))
+		else
+			message = "Your todo list is empty!\n"
+			if no_of_notifications > 0
+				multiple  = no_of_notifications isnt 1
+				message += "   >>> You have #{no_of_notifications} notification"+ (if multiple then 's' else '') + "\n\n"
+			msgData.text = message
+
+		return msgData
+
+	createListMessageNotInUse: (user) =>
 		items = @getItems(user.id)
 		notifications = @getNotification(user)
 		no_of_notifications = notifications.length
 
 		message = ""
 		header = " S.No                                      Deadline.                                          Status                             \n"
-		overdue = ["\nOverdue\n"+header]
-		today = ["\nToday\n"+header]
-		tomorrow = ["\nTomorrow\n"+header]
-		someOtherDay = ["\nOther\n"+header]
+		overdue = ["\n                                                                           Overdue\n"+header]
+		today = ["\n                              Today\n"+header]
+		tomorrow = ["\n                              Tomorrow\n"+header]
+		someOtherDay = ["\n                              Other\n"+header]
 
 		current_date = new Date()
 		current_date = new Date(current_date.getFullYear(),current_date.getMonth(),current_date.getDate())
@@ -996,32 +1147,35 @@ class Todos
 
 					date = new Date(todo["task_date"])
 					if date < current_date
-						overdue.push(values.join("                                   "))
+						overdue.push(values.join("                                        "))
 
 					else if date.getMonth() == current_date.getMonth() and date.getDate() == current_date.getDate() and date.getFullYear() == current_date.getFullYear()
-						today.push(values.join("                                   "))
+						today.push(values.join("                                        "))
 
 					else if date.getMonth() == next_date.getMonth() and date.getDate() == next_date.getDate() and date.getFullYear() == next_date.getFullYear()
-						tomorrow.push(values.join("                                   "))
+						tomorrow.push(values.join("                                        "))
 
 					else
-						someOtherDay.push(values.join("                                   "))
+						someOtherDay.push(values.join("                                        "))
 
 			if overdue.length > 1
 				message += overdue.join("\n")
-				message += "\n------------------------------------------------------------------------------------------------------------\n"
+				message += "\n-------------------------------------------------------------------------------------------------------\n"
 			if today.length > 1
 				message += today.join("\n")
 				message += 
-				"\n------------------------------------------------------------------------------------------------------------\n"
+				"\n-------------------------------------------------------------------------------------------------------\n"
 			if tomorrow.length > 1
 				message += tomorrow.join("\n")
 				message += 
-				"\n------------------------------------------------------------------------------------------------------------\n"
+				"\n-------------------------------------------------------------------------------------------------------\n"
 			if someOtherDay.length > 1
 				message += someOtherDay.join("\n")
 		else
-			message += "Nothing to do at the moment!"
+			if no_of_notifications > 0
+				multiple  = no_of_notifications isnt 1
+				message += "   >>> You have #{no_of_notifications} notification"+ (if multiple then 's' else '') + "\n\n"
+			message += "Your todo list is empty!"
 
 		return message
 
@@ -1142,8 +1296,8 @@ class Todos
 		if totalItems > 0
 			message += "#{totalItems} item" + (if multiple then 's' else '') + " in your list\n\n"
 
-		message += @createListMessage(user)
+		
 
-		msg.send message
+		@robot.adapter.customMessage @createListUsingAttachments(msg)
 
 module.exports = (robot) -> new Todos(robot)
