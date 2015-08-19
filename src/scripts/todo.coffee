@@ -93,7 +93,7 @@ class Todos
 	getHeaderAttachment: (noOfItems,noOfNotifications) =>
 		str = {
         "fallback": "",
-        "title": "TODO List\n"
+        "title": "TODO List"
 		"fields":[
             {
                 "title": ">>>Total Items"
@@ -104,9 +104,9 @@ class Todos
                 "title": ">>>Notification"
                 "value": "#{noOfNotifications}"
                 "short": true
-                "color": "#FF0000"
             }
          ]
+
     	}
 
 		return str
@@ -144,6 +144,7 @@ class Todos
 		else 
 			notification = notifications[number-1]
 			task = notification.task
+			assignor_id = notification.assignor_id
 			if task?
 				ret = @addItemToArray(user.id,task)
 				if ret != 0
@@ -152,6 +153,10 @@ class Todos
 
 					msg.send message
 					@robot.adapter.customMessage @createNotificationMessage(msg)
+					console.log (notification.assignor_name)
+					if assignor_id != user.id
+						@robot.adapter.customMessage @notifyAssignor(notification.assignor_name,notification.assignor_name,user.name,"accepted")
+
 				else
 					message = "Error occurred while task addition."
 					msg.send message
@@ -200,6 +205,7 @@ class Todos
 
 					msg.send message
 					@robot.adapter.customMessage @createNotificationMessage(msg)
+					@robot.adapter.customMessage @notifyAssignor(assignor_name,assignor_name,user.name,"Rejected")
 				else
 					message = "Error occurred while performing the operation."
 					msg.send message
@@ -238,7 +244,6 @@ class Todos
 		assignee_name = msg.match[2]
 		task_in_context = user_id+"_"+"task_in_context"
 
-		
 		assignee_id_rawText = msg.message.rawText
 		start_index = assignee_id_rawText.indexOf("@")
 		if start_index != -1
@@ -252,6 +257,17 @@ class Todos
 				return 
 		else
 			message = "Error occurred while fetching assignee id."
+			msg.send message
+			return 
+
+		start_index = msg.message.text.indexOf("@")
+		if start_index != -1
+			start_index  += 1
+			channel_room = msg.message.text.substring(start_index)
+			console.log (channel_room)
+
+		else
+			message = "Error occurred while fetching assignee chat room info."
 			msg.send message
 			return 
 
@@ -295,6 +311,7 @@ class Todos
 		message = "Task assigned to #{assignee_name}"
 
 		msg.send message
+		@robot.adapter.customMessage @notifyAssignee(assignee_name,channel_room,assignor_name)
 
 	assignNotification: (user_id,notification) =>
 		if user_id? and notification?
@@ -1013,6 +1030,31 @@ class Todos
 			msgData.text = "You don't have any notification"
 			return msgData
 
+	notifyAssignee: (assignee_name,room,assignor) =>
+		msgData = {
+    	channel: ""
+  		attachments: [
+  			"title": ":slack: Hey #{assignee_name}! #{assignor} assigned a task to you."
+  		]
+    	}
+
+		msgData.channel = "#{room}"
+
+		return msgData
+
+	notifyAssignor: (assignor,room,assignee,action) =>
+		msgData = {
+    	channel: ""
+  		attachments: [
+  			"title": ":slack: Hey #{assignor}! #{assignee} #{action} a task assigned by you."
+  		]
+    	}
+
+		msgData.channel = "#{room}"
+
+		return msgData
+
+
 	createListUsingAttachments: (msg) =>
 		user = msg.message.user
 		items = @getItems(user.id)
@@ -1030,6 +1072,7 @@ class Todos
 		someOtherDay = []
 
 		separator = "\n-------------------------------------------------------------------------------------------------------\n"
+		line_separator = "\n_______________________________________________________________________________________________\n"
 		
 
 		current_date = new Date()
@@ -1040,6 +1083,7 @@ class Todos
 
 		if items.length > 0
 			msgData.attachments.push(@getHeaderAttachment(items.length,no_of_notifications))
+			msgData.attachments.push(@getDataAttachment(line_separator,""))
 			
 			for todo, index in items
 				values = []
@@ -1103,81 +1147,7 @@ class Todos
 
 		return msgData
 
-	createListMessageNotInUse: (user) =>
-		items = @getItems(user.id)
-		notifications = @getNotification(user)
-		no_of_notifications = notifications.length
 
-		message = ""
-		header = " S.No                                      Deadline.                                          Status                             \n"
-		overdue = ["\n                                                                           Overdue\n"+header]
-		today = ["\n                              Today\n"+header]
-		tomorrow = ["\n                              Tomorrow\n"+header]
-		someOtherDay = ["\n                              Other\n"+header]
-
-		current_date = new Date()
-		current_date = new Date(current_date.getFullYear(),current_date.getMonth(),current_date.getDate())
-
-		next_date = new Date()
-		next_date = new Date(next_date.getFullYear(),next_date.getMonth(),next_date.getDate()+1)
-
-		if items.length > 0
-			message += "                                                                           To Do List              \n\n"
-			if no_of_notifications > 0
-				multiple  = no_of_notifications isnt 1
-				message += "   >>> You have #{no_of_notifications} notification"+ (if multiple then 's' else '') + "\n\n"
-			for todo, index in items
-				values = []
-				values.push(index + 1)
-
-
-				values.push(todo["description"])
-				values.push(todo["date_str"])
-				values.push(todo["time"])
-				values.push(todo["note"])
-				values.push(todo["status"])
-
-				values = @getTaskString(todo,index+1)
-
-				if values.length > 0
-					subtasks = todo["subtask_list"]
-
-					for subtask,index in subtasks
-						values.push("\n           "+(index+1)+". "+subtask)
-
-					date = new Date(todo["task_date"])
-					if date < current_date
-						overdue.push(values.join("                                        "))
-
-					else if date.getMonth() == current_date.getMonth() and date.getDate() == current_date.getDate() and date.getFullYear() == current_date.getFullYear()
-						today.push(values.join("                                        "))
-
-					else if date.getMonth() == next_date.getMonth() and date.getDate() == next_date.getDate() and date.getFullYear() == next_date.getFullYear()
-						tomorrow.push(values.join("                                        "))
-
-					else
-						someOtherDay.push(values.join("                                        "))
-
-			if overdue.length > 1
-				message += overdue.join("\n")
-				message += "\n-------------------------------------------------------------------------------------------------------\n"
-			if today.length > 1
-				message += today.join("\n")
-				message += 
-				"\n-------------------------------------------------------------------------------------------------------\n"
-			if tomorrow.length > 1
-				message += tomorrow.join("\n")
-				message += 
-				"\n-------------------------------------------------------------------------------------------------------\n"
-			if someOtherDay.length > 1
-				message += someOtherDay.join("\n")
-		else
-			if no_of_notifications > 0
-				multiple  = no_of_notifications isnt 1
-				message += "   >>> You have #{no_of_notifications} notification"+ (if multiple then 's' else '') + "\n\n"
-			message += "Your todo list is empty!"
-
-		return message
 
 	getTaskString: (msg,index) =>
 		if msg?
@@ -1198,90 +1168,6 @@ class Todos
 				else
 					task_string.push(empty_status)
 				task_string.push("\nDescription:\n"+msg["description"]+"\n")
-			return task_string
-
-	getTaskStringNotInUse: (msg,index) =>
-		if msg?
-			task_string = []
-			desc_length = 0
-			note_length = 0
-			empty_date = " "
-			empty_status = "P  "
-			empty_desc = " "
-			empty_note = " "
-			if msg["description"]?
-				desc_length = msg["description"].length
-			if desc_length > 0
-				if msg["note"]?
-					note_length = 0
-				task_string.push(index+".  ")
-				task_string.push(msg["date_str"]+" "+msg["time"])
-				if msg["status"]?
-					task_string.push(msg["status"])
-				else
-					task_string.push(empty_status)
-				task_string.push("                 ")
-				desc_str = msg["description"]
-				desc_start_index = 0
-				node_start_index = 0
-				if desc_length < 25
-					padding_desc = 25-desc_length
-					while padding_desc > 0
-						desc_str += "  "
-						--padding_desc
-					task_string.push(desc_str)
-					desc_start_index = desc_length
-				else	
-					task_string.push(msg["description"].substring(desc_start_index,desc_start_index+25))
-					desc_start_index = desc_start_index+25
-				if note_length > 0	
-					if 	note_length < 15
-						note_str = msg["note"]
-						padding_note = 15-note_length
-						while padding_note > 0
-						 note_str += "  "
-						 --padding_note
-						task_string.push(note_str)
-						node_start_index = note_length
-					else
-						task_string.push(msg["note"].substring(node_start_index,node_start_index+15))
-						node_start_index = node_start_index+15
-				else
-					task_string.push(empty_note)
-
-				while desc_start_index < desc_length or node_start_index < note_length
-					task_string.push("\n")
-					task_string.push("                                                                             ")
-					if desc_start_index < desc_length
-						if (desc_length - desc_start_index) < 25
-							desc_str = msg["description"].substring(desc_start_index,desc_length)
-							padding_desc = desc_length-desc_start_index
-							while padding_desc > 0
-							 desc_str += " "
-							 --padding_desc
-							task_string.push(desc_str)
-							desc_start_index = desc_length
-						else
-							task_string.push(msg["description"].substring(desc_start_index,desc_start_index+25))
-							desc_start_index = desc_start_index+25
-					else
-						task_string.push(empty_desc)
-
-					if node_start_index < note_length
-						if (note_length - node_start_index) < 15
-							note_str = msg["note"].substring(node_start_index,note_length)
-							padding_note = note_length-node_start_index
-							while padding_note > 0
-							 note_str += "   "
-							 --padding_note
-							task_string.push(note_str)
-							node_start_index = note_length
-						else
-							task_string.push(msg["note"].substring(node_start_index,node_start_index+15))
-							node_start_index = node_start_index+15
-					else
-						task_string.push(empty_note)
-
 			return task_string
 
 	getItems: (user_id) => return @robot.brain.data.todos[user_id] or []
