@@ -107,7 +107,4 @@ First will display details of last added task and second will show details of ta
 ### 19. clear: To clear all notifications
 	Example:
 	i. clear
-### 20. search: To search for tasks based on keywords.
-	Example:
-	i. search Meeting Call Deploy
 

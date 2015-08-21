@@ -120,6 +120,10 @@ A Hubot script that manages TODOs.
 ### 16. help
 ![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-help.jpg "todo help")
 
+### 17. search
+	 search (key-words) , user can enter multiple keywords separated by space
+![alt text](https://github.com/vishals79/hubot-todo/blob/master/etc/todo-search.jpg "todo search")
+
 ## Configuration
 See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
 
@@ -166,5 +170,7 @@ See [`src/scripts/todo.coffee`](src/scripts/todo.coffee).
         - Reject task to send it back to the assignor and delete the notification.
       - clear
         - Clear all notifications.
+      - search
+        - Search for tasks based on keywords.
     - To be aded
   - Examples
