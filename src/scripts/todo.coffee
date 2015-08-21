@@ -35,6 +35,7 @@ class Todos
 		@robot.respond /accept( [0-9]+){0,1}/i, @acceptNotification
 		@robot.respond /reject( [0-9]+){0,1}/i, @rejectNotification
 		@robot.respond /clear/i, @clearNotification
+		@robot.respond /search (.*)/i, @search
 
 	help: (msg) =>
 		message = "\n* add|create <task-description> @hh:mm (optional)
@@ -56,11 +57,19 @@ class Todos
         \n* notifications : Display Notifications
         \n* accept <task_number> : Add task to your list and delete the notification.
         \n* reject <task_number> : Assign task back to the assignor and delete the notification.
-        \n* clear: Clear all notifications"
+        \n* clear: Clear all notifications
+        \n* search <keywords>: Search for task based on keywords."
         
         	
 
 		msg.send message
+
+	search: (msg) =>
+		user 	   = msg.message.user
+		text = msg.match[1]
+		keywords = text.split(" ")
+		@robot.adapter.customMessage @createListUsingAttachments(msg,true,keywords)
+
 
 	getColHeaderAttachment: (title) =>
 		str = {
@@ -153,7 +162,7 @@ class Todos
 
 					msg.send message
 					@robot.adapter.customMessage @createNotificationMessage(msg)
-					console.log (notification.assignor_name)
+
 					if assignor_id != user.id
 						@robot.adapter.customMessage @notifyAssignor(notification.assignor_name,notification.assignor_name,user.name,"accepted")
 
@@ -264,7 +273,6 @@ class Todos
 		if start_index != -1
 			start_index  += 1
 			channel_room = msg.message.text.substring(start_index)
-			console.log (channel_room)
 
 		else
 			message = "Error occurred while fetching assignee chat room info."
@@ -370,7 +378,7 @@ class Todos
 
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	setDefaultTime: (msg) =>
 		user 	   = msg.message.user
@@ -519,7 +527,7 @@ class Todos
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	markTaskAsFinish: (msg) =>
 		user 	   = msg.message.user
@@ -559,7 +567,7 @@ class Todos
 		message = "Task status updated.\n\n Task Number: #{task_number}\n Date: #{item.date_str}\n Time: #{item.time}\n Status: Complete\n Description: #{item.description}"
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	addSubtask: (msg) =>
 		user 	   = msg.message.user
@@ -568,6 +576,7 @@ class Todos
 
 		items      = @getItems(user.id)
 		totalItems = items.length
+
 
 		if task_parent_number > totalItems
 			if totalItems > 0
@@ -589,7 +598,7 @@ class Todos
 		message = "Sub task added."
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	addChild: (msg) =>
 		user 	   = msg.message.user
@@ -675,7 +684,7 @@ class Todos
 		message = "Task Number: #{task_number}\n\nNote: #{note}"
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	setDate: (msg) =>
 		user 	   = msg.message.user
@@ -731,7 +740,7 @@ class Todos
 		message = "Task Number: #{task_number}\n\n Old Date: #{oldDate}\n New Date: #{task.date_str}\n Description: #{task.description}"
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	isValidDate: (date,month,year) =>
 		if date? and month? and year?
@@ -805,7 +814,7 @@ class Todos
 		message = "Task Number: #{task_number}\n\n Old time: #{oldTime}\n New Time: #{task.time}\n Description: #{task.description}"
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	addItem: (msg) =>
 		user 	   = msg.message.user
@@ -861,7 +870,7 @@ class Todos
 			message = "Error occurred while task addition."
 		
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	addItemToArray: (user_id,task) =>
 		if user_id?
@@ -934,7 +943,7 @@ class Todos
 			message += "\n\n"
 
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	updateItem: (msg) =>
 		user      = msg.message.user
@@ -986,7 +995,7 @@ class Todos
 
 		message += "\n\n"
 		msg.send message
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 	doesTimeExist: (desc) =>
 		if desc?
@@ -1054,8 +1063,17 @@ class Todos
 
 		return msgData
 
+	isValidTask: (desc,keywords) =>
+		retValue = 0
+		if desc? and keywords? and keywords.length > 0
+			for word in keywords
+				re = new RegExp("#{word}","i");
+				index = desc.match re
+				if index?
+					retValue = 1
+		return retValue
 
-	createListUsingAttachments: (msg) =>
+	createListUsingAttachments: (msg,filter,keywords) =>
 		user = msg.message.user
 		items = @getItems(user.id)
 		notifications = @getNotification(user)
@@ -1080,6 +1098,19 @@ class Todos
 
 		next_date = new Date()
 		next_date = new Date(next_date.getFullYear(),next_date.getMonth(),next_date.getDate()+1)
+
+		if filter
+			filterItems = []
+			for todo, index in items
+				isValidTask = @isValidTask(todo["description"],keywords) 
+				if isValidTask != 0
+					filterItems.push(todo)
+			if filterItems.length > 0
+				items = filterItems
+			else
+				msgData.text = "Hey #{user.name}! I could not find any task matching the search criteria."
+				return msgData
+
 
 		if items.length > 0
 			msgData.attachments.push(@getHeaderAttachment(items.length,no_of_notifications))
@@ -1184,6 +1215,6 @@ class Todos
 
 		
 
-		@robot.adapter.customMessage @createListUsingAttachments(msg)
+		@robot.adapter.customMessage @createListUsingAttachments(msg,false,"")
 
 module.exports = (robot) -> new Todos(robot)
